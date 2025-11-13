@@ -208,3 +208,6 @@ __marimo__/
 .venv/
 __pycache__/
 .ipynb_checkpoints/
+
+.DS_Store
+backend/.DS_Store
