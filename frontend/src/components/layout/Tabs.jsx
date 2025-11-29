@@ -5,6 +5,7 @@ function Tabs({ active, onChange }) {
     { id: "visual", label: "Network Visualization" },
     { id: "comparison", label: "Before/After Comparison" },
     { id: "resilience", label: "Resilience Analysis" },
+    { id: "ml", label: "ML Insights" },
   ];
 
   return (
@@ -33,9 +34,7 @@ function Tabs({ active, onChange }) {
               color: isActive ? "#111827" : "#6b7280",
               fontWeight: isActive ? 600 : 500,
               fontSize: "0.95rem",
-              boxShadow: isActive
-                ? "0 1px 3px rgba(15,23,42,0.1)"
-                : "none",
+              boxShadow: isActive ? "0 1px 3px rgba(15,23,42,0.1)" : "none",
             }}
           >
             {tab.label}

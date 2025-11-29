@@ -1,0 +1,24 @@
+feature,importance
+scenario_Tunnel Closure,0.6557688157377588
+severity,0.12041091382600609
+scenario_Random Failure,0.091714545380613
+scenario_Bridge Collapse,0.027672701074269113
+scenario_Targeted Attack (Top k%),0.0152392794374185
+feat_bridge_frac,0.015004273307941376
+feat_density,0.014492753419687051
+feat_approx_aspl,0.00989234722447658
+feat_assortativity,0.009758293291322856
+feat_bc_mean,0.008423767734871761
+feat_modularity,0.006468725050216741
+scenario_Highway Flood,0.006265900189884062
+feat_avg_clustering,0.006176469348846189
+feat_avg_degree,0.0035639592039483957
+feat_degree_std,0.0015903225769392409
+feat_bc_std,0.0015697777836969332
+feat_n_nodes,0.0015003689078523432
+feat_tunnel_frac,0.001260695220704535
+feat_n_edges,0.0012047421704822012
+feat_major_highway_frac,0.0009606080821919807
+feat_transitivity,0.0007519180781360084
+feat_max_degree,0.0003088229527361527
+feat_giant_component_frac,0.0

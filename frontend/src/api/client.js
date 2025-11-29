@@ -32,3 +32,47 @@ export async function runSimulation({
   }
   return await res.json(); // This is your SimResponse from backend
 }
+
+// === ML ENDPOINTS ===
+// === ML ENDPOINTS (corrected) ===
+
+//const API_BASE = "http://127.0.0.1:8000";
+
+// 1. Get feature importances (global)
+export async function fetchFeatureImportances() {
+  const res = await fetch(`${API_BASE}/ml/importances`);
+  if (!res.ok) {
+    console.error(await res.text());
+    throw new Error("Failed to load ML feature importances");
+  }
+  return await res.json(); // [{ feature, importance }]
+}
+
+// 2. Get per-city structural features
+export async function fetchCityFeatures(city) {
+  const res = await fetch(
+    `${API_BASE}/ml/features?city=${encodeURIComponent(city)}`
+  );
+  if (!res.ok) {
+    console.error(await res.text());
+    throw new Error("Failed to load city features");
+  }
+  const data = await res.json();
+  return data.features;
+}
+
+// 3. Predict resilience for any city + scenario
+export async function predictResilience({ city, scenario, severity }) {
+  const url = `${API_BASE}/ml/predict?city=${encodeURIComponent(
+    city
+  )}&scenario=${encodeURIComponent(scenario)}&severity=${severity}`;
+
+  const res = await fetch(url, { method: "GET" });
+
+  if (!res.ok) {
+    console.error(await res.text());
+    throw new Error("Prediction error");
+  }
+  const data = await res.json();
+  return { resilience_score: data.predicted_resilience };
+}

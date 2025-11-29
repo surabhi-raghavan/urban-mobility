@@ -17,6 +17,7 @@ from urban_resilience.edge_selection import (
 )
 from urban_resilience.simulation import simulate_single_shock
 from urban_resilience.usgs_flood import download_usgs_flood_features_for_city
+from urban_resilience.ml_routes import router as ml_router
 
 EdgeId = Tuple[int, int, int]
 
@@ -35,6 +36,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(ml_router)
 
 # ---------- Pydantic models ----------
 
