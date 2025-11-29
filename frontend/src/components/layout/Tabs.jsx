@@ -6,6 +6,7 @@ function Tabs({ active, onChange }) {
     { id: "comparison", label: "Before/After Comparison" },
     { id: "resilience", label: "Resilience Analysis" },
     { id: "ml", label: "ML Insights" },
+    { id: "evaluation", label: "Evaluation" },
   ];
 
   return (

@@ -1,6 +1,10 @@
 // src/api/client.js
-const API_BASE = "http://127.0.0.1:8000";
 
+export const API_BASE = "http://127.0.0.1:8000";
+
+// -----------------------------------------------------------
+// SCENARIOS + SIMULATION
+// -----------------------------------------------------------
 export async function fetchScenarios() {
   const res = await fetch(`${API_BASE}/scenarios`);
   if (!res.ok) throw new Error("Failed to load scenarios");
@@ -26,53 +30,53 @@ export async function runSimulation({
       use_usgs_flood: useUSGS,
     }),
   });
+
   if (!res.ok) {
     const text = await res.text();
     throw new Error(text || "Simulation failed");
   }
-  return await res.json(); // This is your SimResponse from backend
+  return await res.json();
 }
 
-// === ML ENDPOINTS ===
-// === ML ENDPOINTS (corrected) ===
+// -----------------------------------------------------------
+// ML MODEL (CITY FEATURES / PREDICTION)
+// -----------------------------------------------------------
 
-//const API_BASE = "http://127.0.0.1:8000";
-
-// 1. Get feature importances (global)
 export async function fetchFeatureImportances() {
   const res = await fetch(`${API_BASE}/ml/importances`);
-  if (!res.ok) {
-    console.error(await res.text());
-    throw new Error("Failed to load ML feature importances");
-  }
-  return await res.json(); // [{ feature, importance }]
+  if (!res.ok) throw new Error("Failed to load ML feature importances");
+  return await res.json();
 }
 
-// 2. Get per-city structural features
 export async function fetchCityFeatures(city) {
   const res = await fetch(
     `${API_BASE}/ml/features?city=${encodeURIComponent(city)}`
   );
-  if (!res.ok) {
-    console.error(await res.text());
-    throw new Error("Failed to load city features");
-  }
+  if (!res.ok) throw new Error("Failed to load city features");
   const data = await res.json();
   return data.features;
 }
 
-// 3. Predict resilience for any city + scenario
 export async function predictResilience({ city, scenario, severity }) {
   const url = `${API_BASE}/ml/predict?city=${encodeURIComponent(
     city
   )}&scenario=${encodeURIComponent(scenario)}&severity=${severity}`;
 
-  const res = await fetch(url, { method: "GET" });
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Prediction error");
 
-  if (!res.ok) {
-    console.error(await res.text());
-    throw new Error("Prediction error");
-  }
   const data = await res.json();
   return { resilience_score: data.predicted_resilience };
 }
+export const getMLMetrics = () =>
+  fetch(`${API_BASE}/ml/eval/metrics`).then((r) => r.json());
+
+export const getFeatureImportances = () =>
+  fetch(`${API_BASE}/ml/eval/predictions`) // <-- FIXED!
+    .then((r) => r.json());
+
+export const getScenarioMAE = () =>
+  fetch(`${API_BASE}/ml/eval/scenario_mae`).then((r) => r.json());
+
+export const getPredictions = () =>
+  fetch(`${API_BASE}/ml/eval/predictions`).then((r) => r.json());

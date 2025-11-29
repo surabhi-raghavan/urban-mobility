@@ -7,6 +7,7 @@ import NetworkMap from "../components/maps/NetworkMap";
 import ComparisonMaps from "../components/maps/ComparisonMaps";
 import { fetchScenarios, runSimulation } from "../api/client";
 import MLDashboard from "./MLDashboard";
+import Evaluation from "./Evaluation.jsx";
 
 function Dashboard() {
   const [scenarios, setScenarios] = useState([]);
@@ -29,6 +30,7 @@ function Dashboard() {
   const [resilienceHistory, setResilienceHistory] = useState([]);
   const [cityRankings, setCityRankings] = useState([]);
   const [allCityResilience, setAllCityResilience] = useState([]);
+
   useEffect(() => {
     fetchScenarios().then((scs) => {
       setScenarios(scs);
@@ -271,212 +273,94 @@ function Dashboard() {
                 gap: "1.5rem",
               }}
             >
-              <h3>Resilience Analysis</h3>
-              <p
-                style={{ fontSize: "0.85rem", color: "#6b7280", marginTop: 0 }}
-              >
-                Summary of the disruption impact based on the current
-                simulation.
-              </p>
+              <h3>Resilience Analysis & City Comparison</h3>
 
-              {/* SUMMARY GRID */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-                  gap: "0.75rem",
-                }}
-              >
-                <SummaryCard title="Total Roads" value={totalRoads} />
-                <SummaryCard title="Disrupted Roads" value={disrupted} />
-                <SummaryCard title="Remaining Roads" value={remaining} />
-                <SummaryCard
-                  title="Resilience Score"
-                  value={
-                    resilienceScore != null
-                      ? `${resilienceScore.toFixed(1)}%`
-                      : "—"
-                  }
-                />
-              </div>
-
-              {/* (2) DISRUPTION BREAKDOWN */}
-              {removedGeo && (
-                <div
-                  style={{
-                    background: "#f9fafb",
-                    padding: "1rem",
-                    borderRadius: "0.75rem",
-                    border: "1px solid #e5e7eb",
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  <h4 style={{ marginTop: 0 }}>What Was Disrupted?</h4>
-                  {(() => {
-                    const feats = removedGeo.features || [];
-
-                    const bridges = feats.filter(
-                      (f) => f.properties.bridge
-                    ).length;
-                    const tunnels = feats.filter(
-                      (f) => f.properties.tunnel
-                    ).length;
-                    const highways = feats.filter((f) =>
-                      (f.properties.highway || "").includes("motorway")
-                    ).length;
-                    const major = feats.filter((f) => {
-                      const h = f.properties.highway || "";
-                      return (
-                        h.includes("motorway") ||
-                        h.includes("trunk") ||
-                        h.includes("primary") ||
-                        h.includes("secondary")
-                      );
-                    }).length;
-                    const local = feats.length - major;
-
-                    return (
-                      <>
-                        <p>
-                          <strong>Bridges removed:</strong> {bridges}
-                        </p>
-                        <p>
-                          <strong>Tunnels removed:</strong> {tunnels}
-                        </p>
-                        <p>
-                          <strong>Highways removed:</strong> {highways}
-                        </p>
-                        <p>
-                          <strong>Major roads removed:</strong> {major}
-                        </p>
-                        <p>
-                          <strong>Local roads removed:</strong> {local}
-                        </p>
-                      </>
-                    );
-                  })()}
-                </div>
-              )}
-
-              {/* (3) SEVERITY–RESILIENCE TREND (placeholder chart) */}
-              <div
-                style={{
-                  padding: "1rem",
-                  borderRadius: "0.75rem",
-                  border: "1px solid #e5e7eb",
-                  background: "white",
-                }}
-              >
-                <h4 style={{ marginTop: 0 }}>
-                  Severity vs. Predicted Resilience
-                </h4>
-                <p style={{ fontSize: "0.85rem", color: "#6b7280" }}>
-                  This will show how resilience changes as shock severity
-                  increases. (ML model curve upcoming.)
-                </p>
-                <div
-                  style={{
-                    height: "150px",
-                    background: "#eef2ff",
-                    borderRadius: "8px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#6b7280",
-                  }}
-                >
-                  Chart coming soon…
-                </div>
-              </div>
-
-              {/* (4) PER-CITY ML STRUCTURAL SCORE (only if selected city exists) */}
-              {selectedCity && (
-                <div
-                  style={{
-                    background: "#fdfdfd",
-                    padding: "1rem",
-                    borderRadius: "0.75rem",
-                    border: "1px solid #e5e7eb",
-                  }}
-                >
-                  <h4 style={{ marginTop: 0 }}>
-                    Structural Stability Indicators
-                  </h4>
-                  <p style={{ fontSize: "0.85rem", marginTop: 0 }}>
-                    Based on ML-derived structural features.
+              {/* CITY B SELECTION */}
+              <div style={{ display: "flex", gap: "1rem" }}>
+                <div style={{ flex: 1 }}>
+                  <h4>Primary City</h4>
+                  <p style={{ color: "#6b7280" }}>
+                    Selected: {effectiveCityString || "None"}
                   </p>
-
-                  {(() => {
-                    const f = simResult?.struct_features;
-                    if (!f) return <p>No structural features available.</p>;
-
-                    const effScore = (
-                      0.4 * (1 - f.feat_aspl_norm) +
-                      0.6 * f.feat_clustering
-                    ).toFixed(2);
-
-                    const vulnScore = (
-                      0.7 * f.feat_bc_max_norm +
-                      0.3 * (1 - f.feat_redundancy)
-                    ).toFixed(2);
-
-                    const redundScore = f.feat_redundancy.toFixed(2);
-
-                    return (
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "repeat(3, 1fr)",
-                          gap: "0.75rem",
-                        }}
-                      >
-                        <SummaryCard
-                          title="Efficiency Score"
-                          value={effScore}
-                        />
-                        <SummaryCard
-                          title="Vulnerability Score"
-                          value={vulnScore}
-                        />
-                        <SummaryCard
-                          title="Redundancy Score"
-                          value={redundScore}
-                        />
-                      </div>
-                    );
-                  })()}
                 </div>
-              )}
 
-              {/* (5) TOP 5 BOTTLENECKS */}
-              {edgesGeo && (
+                <div style={{ flex: 1 }}>
+                  <h4>Compare With</h4>
+                  <input
+                    type="text"
+                    placeholder="Enter second city (e.g., Boston, MA)"
+                    value={cityOverrideCompare || ""}
+                    onChange={(e) => setCityOverrideCompare(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "0.5rem",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* ONE BUTTON */}
+              <button
+                onClick={handleCompareCities}
+                style={{
+                  padding: "0.6rem 1rem",
+                  background: "#4f46e5",
+                  color: "white",
+                  borderRadius: "8px",
+                  fontWeight: 600,
+                  marginTop: "0.5rem",
+                }}
+              >
+                Compare Cities
+              </button>
+
+              {/* RESULTS SECTION */}
+              {compareResults && (
                 <div
                   style={{
-                    background: "#fff7ed",
+                    marginTop: "1.5rem",
                     padding: "1rem",
-                    borderRadius: "0.75rem",
-                    border: "1px solid #fed7aa",
+                    borderRadius: "12px",
+                    background: "#f9fafb",
+                    border: "1px solid #e5e7eb",
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: "1.5rem",
                   }}
                 >
-                  <h4 style={{ marginTop: 0 }}>
-                    Top 5 Bottlenecks (by Betweenness)
-                  </h4>
+                  <div>
+                    <h4>{compareResults.cityA.city}</h4>
+                    <SummaryCard
+                      title="Resilience Score"
+                      value={`${compareResults.cityA.score.toFixed(1)}%`}
+                    />
+                    <SummaryCard
+                      title="Disrupted Roads"
+                      value={compareResults.cityA.disrupted}
+                    />
+                    <SummaryCard
+                      title="Remaining Roads"
+                      value={compareResults.cityA.remaining}
+                    />
+                  </div>
 
-                  {(() => {
-                    const feats = edgesGeo.features || [];
-                    const ranked = feats
-                      .filter((f) => f.properties.bc != null)
-                      .sort((a, b) => b.properties.bc - a.properties.bc)
-                      .slice(0, 5);
-
-                    return ranked.map((e, i) => (
-                      <p key={i}>
-                        <strong>#{i + 1}</strong> — bc=
-                        {e.properties.bc.toFixed(4)}
-                        (u={e.properties.u}, v={e.properties.v})
-                      </p>
-                    ));
-                  })()}
+                  <div>
+                    <h4>{compareResults.cityB.city}</h4>
+                    <SummaryCard
+                      title="Resilience Score"
+                      value={`${compareResults.cityB.score.toFixed(1)}%`}
+                    />
+                    <SummaryCard
+                      title="Disrupted Roads"
+                      value={compareResults.cityB.disrupted}
+                    />
+                    <SummaryCard
+                      title="Remaining Roads"
+                      value={compareResults.cityB.remaining}
+                    />
+                  </div>
                 </div>
               )}
             </div>
@@ -493,6 +377,19 @@ function Dashboard() {
               }}
             >
               <MLDashboard city={effectiveCityString} />
+            </div>
+          )}
+
+          {activeTab === "evaluation" && (
+            <div
+              style={{
+                background: "#fff",
+                padding: "1.25rem",
+                borderRadius: "1rem",
+                border: "1px solid #e5e7eb",
+              }}
+            >
+              <Evaluation />
             </div>
           )}
         </section>
