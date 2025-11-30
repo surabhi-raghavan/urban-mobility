@@ -1,0 +1,6 @@
+scenario,MAE
+Bridge Collapse,0.04373747427020717
+Highway Flood,0.01993655123955306
+Random Failure,0.04625947639655773
+Targeted Attack (Top k%),0.039516276017420596
+Tunnel Closure,0.000965578104521464
