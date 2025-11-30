@@ -7,32 +7,54 @@ import NetworkMap from "../components/maps/NetworkMap";
 import ComparisonMaps from "../components/maps/ComparisonMaps";
 import { fetchScenarios, runSimulation } from "../api/client";
 
+import MetricsHelp from "../components/metrics/MetricsHelp";
+import ScenarioInsights from "../components/insights/ScenarioInsights";
+import TimeOfDayImpact from "../components/insights/TimeOfDayImpact";
+import MultiCitySummary from "../components/insights/MultiCitySummary";
+import WhatIfPanel from "../components/insights/WhatIfPanel";
+
+// Map slider percentage (5–80) to severity (0.01–0.5)
+function mapIntensityToSeverity(intensityPercent) {
+  const minSlider = 5;
+  const maxSlider = 80;
+  const minSeverity = 0.01;
+  const maxSeverity = 0.5;
+
+  const clamped = Math.min(maxSlider, Math.max(minSlider, intensityPercent));
+  const t = (clamped - minSlider) / (maxSlider - minSlider); // 0 → 1
+  const severity = minSeverity + t * (maxSeverity - minSeverity);
+  return Number(severity.toFixed(3));
+}
+
 function Dashboard() {
   const [scenarios, setScenarios] = useState([]);
   const [activeTab, setActiveTab] = useState("visual");
 
   const [selectedCity, setSelectedCity] = useState(null);
-  const [cityOverride, setCityOverride] = useState(""); // free text
+  const [cityOverride, setCityOverride] = useState("");
 
-  const [scenario, setScenario] = useState("");
-  const [intensity, setIntensity] = useState(40); // 0-100 slider
+  const [scenario, setScenario] = useState(""); // no default
+  const [intensity, setIntensity] = useState(40);
   const [nPairs, setNPairs] = useState(40);
-  const [useUSGS, setUseUSGS] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [simResult, setSimResult] = useState(null);
+
+  // edgesGeo = baseline/intact network; removedGeo = disrupted subset
   const [edgesGeo, setEdgesGeo] = useState(null);
   const [removedGeo, setRemovedGeo] = useState(null);
 
+  const [history, setHistory] = useState([]);
+
+  // Force Leaflet map remount when this increments
+  const [mapVersion, setMapVersion] = useState(0);
+
   useEffect(() => {
     fetchScenarios()
-      .then((scs) => {
-        setScenarios(scs);
-        if (!scenario && scs.length) setScenario(scs[0]);
-      })
+      .then((scs) => setScenarios(scs))
       .catch((e) => console.error(e));
-  }, [scenario]);
+  }, []);
 
   const effectiveCityString = useMemo(() => {
     if (cityOverride.trim()) return cityOverride.trim();
@@ -40,11 +62,10 @@ function Dashboard() {
     return "";
   }, [cityOverride, selectedCity]);
 
-  // Map intensity 0-100 to severity 0.01-0.5
-  const severity = useMemo(() => {
-    const frac = intensity / 100;
-    return 0.01 + frac * (0.5 - 0.01);
-  }, [intensity]);
+  const severity = useMemo(
+    () => mapIntensityToSeverity(intensity),
+    [intensity]
+  );
 
   const handleRun = async () => {
     if (!effectiveCityString) {
@@ -56,20 +77,46 @@ function Dashboard() {
       return;
     }
 
+    console.log("Running simulation with:", {
+      city: effectiveCityString,
+      scenario,
+      intensity,
+      severity,
+      nPairs,
+    });
+
     try {
       setLoading(true);
-      setStatus("Loading network data…");
+      setStatus("Running simulation…");
+
       const res = await runSimulation({
         city: effectiveCityString,
         scenario,
         severity,
         nPairs,
-        useUSGS,
       });
+
       setSimResult(res);
       setEdgesGeo(res.edges_geojson);
       setRemovedGeo(res.removed_edges_geojson);
       setStatus("Done.");
+      setMapVersion((v) => v + 1); // bump map version on each run
+
+      setHistory((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          cityQuery: effectiveCityString,
+          cityLabel: selectedCity?.label || effectiveCityString,
+          scenario,
+          severity,
+          nPairs,
+          avgRatio: res.avg_ratio,
+          medianRatio: res.median_ratio,
+          pctDisconnected: res.pct_disconnected,
+          nRemovedEdges: res.n_removed_edges,
+        },
+      ]);
     } catch (err) {
       console.error(err);
       setStatus("Error running simulation.");
@@ -79,7 +126,6 @@ function Dashboard() {
     }
   };
 
-  // Derived UI numbers
   const totalRoads = edgesGeo?.features?.length || 0;
   const disrupted = simResult?.n_removed_edges || 0;
   const remaining = totalRoads - disrupted;
@@ -88,38 +134,51 @@ function Dashboard() {
       ? (1 / simResult.avg_ratio) * 100
       : null;
 
+  const hasCity = !!selectedCity;
+  const hasBaseline = hasCity && !!edgesGeo;
+  const canRun = !!effectiveCityString && !!scenario && !loading;
+
   return (
     <main
-    style={{
+      style={{
         maxWidth: "1200px",
         margin: "0 auto",
         padding: "1rem 2.5rem 3rem",
-    }}
+      }}
     >
       <CitySelector
         currentCity={selectedCity}
         onSelect={(city) => {
           setSelectedCity(city);
           setCityOverride("");
-          // AUTO-LOAD BASEMAP
+
+          // Reset disruption + baseline state for new city
+          setSimResult(null);
+          setRemovedGeo(null);
+          setEdgesGeo(null); // so we don't show previous city while loading
+          setStatus("Loading baseline network…");
+
+          // Use a tiny random-failure shock just to get edges_geojson.
           runSimulation({
             city: city.query,
             scenario: "Random Failure",
-            severity: 0.01,   // NO real disruptions
+            severity: 0.01,
             nPairs: 10,
-            useUSGS: false,
-        }).then((res) => {
-            setSimResult(res);
-            setEdgesGeo(res.edges_geojson);
-            setRemovedGeo(null);
+          })
+            .then((res) => {
+              setEdgesGeo(res.edges_geojson);
+              setStatus("Baseline network loaded.");
+              setMapVersion((v) => v + 1); // bump when baseline changes
+            })
+            .catch((err) => {
+              console.error(err);
+              setStatus("Error loading baseline network.");
             });
         }}
       />
 
-      {/* Tabs */}
       <Tabs active={activeTab} onChange={setActiveTab} />
 
-      {/* Controls + content */}
       <div
         style={{
           display: "grid",
@@ -128,7 +187,7 @@ function Dashboard() {
           alignItems: "flex-start",
         }}
       >
-        {/* Left panel: controls */}
+        {/* LEFT: controls */}
         <section
           style={{
             background: "#ffffff",
@@ -146,9 +205,12 @@ function Dashboard() {
               marginBottom: "1rem",
             }}
           >
-            Select a disruption type and intensity.
+            {hasCity
+              ? "Select a disruption type and intensity for this city."
+              : "Choose a city, then set up a disruption to simulate."}
           </p>
 
+          {/* Intensity slider */}
           <label
             style={{
               display: "block",
@@ -182,6 +244,7 @@ function Dashboard() {
             <span>Catastrophic</span>
           </div>
 
+          {/* Scenario buttons */}
           <label
             style={{
               display: "block",
@@ -192,7 +255,9 @@ function Dashboard() {
           >
             Disruption Type
           </label>
-          <div style={{ display: "grid", gap: "0.4rem", marginBottom: "0.75rem" }}>
+          <div
+            style={{ display: "grid", gap: "0.4rem", marginBottom: "0.75rem" }}
+          >
             {scenarios.map((sc) => (
               <button
                 key={sc}
@@ -217,6 +282,7 @@ function Dashboard() {
             ))}
           </div>
 
+          {/* OD pairs */}
           <label
             style={{
               display: "block",
@@ -239,44 +305,24 @@ function Dashboard() {
               borderRadius: "0.5rem",
               border: "1px solid #e5e7eb",
               fontSize: "0.9rem",
-              marginBottom: "0.5rem",
+              marginBottom: "0.75rem",
             }}
           />
 
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              fontSize: "0.85rem",
-              marginBottom: "0.75rem",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={useUSGS}
-              onChange={(e) => setUseUSGS(e.target.checked)}
-              disabled={scenario !== "Highway Flood"}
-            />
-            <span>Use USGS flood data (Highway Flood only)</span>
-          </label>
-
+          {/* Run button */}
           <button
             type="button"
             onClick={handleRun}
-            disabled={loading || !effectiveCityString}
+            disabled={!canRun}
             style={{
               width: "100%",
               padding: "0.6rem 1rem",
               borderRadius: "999px",
               border: "none",
-              background: "#111827",
+              background: canRun ? "#111827" : "#9ca3af",
               color: "#ffffff",
               fontWeight: 600,
-              cursor:
-                loading || !effectiveCityString
-                  ? "not-allowed"
-                  : "pointer",
+              cursor: canRun ? "pointer" : "not-allowed",
               marginBottom: "0.35rem",
             }}
           >
@@ -293,8 +339,10 @@ function Dashboard() {
           </div>
         </section>
 
-        {/* Right panel: main content */}
-        <section style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        {/* RIGHT: main content */}
+        <section
+          style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+        >
           {activeTab === "visual" && (
             <>
               <div
@@ -306,7 +354,7 @@ function Dashboard() {
               >
                 <div>
                   <h3 style={{ margin: 0 }}>
-                    {selectedCity
+                    {hasCity
                       ? `${selectedCity.label} Road Network`
                       : "Road Network Visualization"}
                   </h3>
@@ -317,7 +365,11 @@ function Dashboard() {
                       color: "#6b7280",
                     }}
                   >
-                    Drivable road network after disruption.
+                    {!hasCity
+                      ? "Select a city to load its baseline road network."
+                      : simResult
+                      ? "Drivable road network after disruption."
+                      : "Baseline road network before any disruption."}
                   </p>
                 </div>
                 {simResult && (
@@ -356,12 +408,52 @@ function Dashboard() {
                 )}
               </div>
 
-              <NetworkMap
-              edges={edgesGeo}
-              removedEdges={removedGeo}
-              scenario={scenario}
-              />
-              <Legend />
+              {!hasCity ? (
+                <div
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: "1rem",
+                    border: "1px solid #e5e7eb",
+                    padding: "2.5rem 1.5rem",
+                    textAlign: "center",
+                    color: "#6b7280",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  Use the city search above to pick one of the study cities.
+                  The map and metrics will appear here once a baseline network
+                  is loaded.
+                </div>
+              ) : !hasBaseline ? (
+                <div
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: "1rem",
+                    border: "1px solid #e5e7eb",
+                    padding: "2.5rem 1.5rem",
+                    textAlign: "center",
+                    color: "#6b7280",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  Loading baseline network for{" "}
+                  <strong>{selectedCity.label}</strong>…
+                </div>
+              ) : (
+                <>
+                  <NetworkMap
+                    edges={edgesGeo}
+                    removedEdges={removedGeo}
+                    mapVersion={mapVersion}
+                  />
+                  <Legend />
+                  <ScenarioInsights
+                    city={selectedCity?.label || effectiveCityString}
+                    scenario={scenario}
+                    simResult={simResult}
+                  />
+                </>
+              )}
             </>
           )}
 
@@ -372,6 +464,9 @@ function Dashboard() {
                 padding: "1.25rem",
                 borderRadius: "1rem",
                 border: "1px solid #e5e7eb",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
               }}
             >
               <ComparisonMaps
@@ -380,6 +475,7 @@ function Dashboard() {
                 scenario={scenario}
                 metrics={simResult}
               />
+              <TimeOfDayImpact simResult={simResult} />
             </div>
           )}
 
@@ -403,9 +499,9 @@ function Dashboard() {
                   color: "#6b7280",
                 }}
               >
-                This view will summarize how structural network features
-                relate to resilience, once we plug in the multi-city +
-                ML results.
+                This view summarizes how structural network features relate to
+                resilience once you aggregate simulations across cities and
+                scenarios.
               </p>
 
               <div
@@ -417,10 +513,10 @@ function Dashboard() {
               >
                 <SummaryCard
                   title="Total Simulations"
-                  value={simResult ? 1 : 0}
+                  value={history.length}
                 />
                 <SummaryCard
-                  title="Avg Resilience"
+                  title="Avg Resilience (this run)"
                   value={
                     resilienceScore != null
                       ? `${resilienceScore.toFixed(1)}%`
@@ -429,28 +525,21 @@ function Dashboard() {
                 />
                 <SummaryCard
                   title="Cities Tested"
-                  value={simResult ? 1 : 0}
+                  value={new Set(history.map((h) => h.cityLabel)).size}
                 />
                 <SummaryCard
-                  title="Most Resilient"
-                  value={selectedCity ? selectedCity.label : "—"}
+                  title="Most Recent City"
+                  value={
+                    history.length
+                      ? history[history.length - 1].cityLabel
+                      : "—"
+                  }
                 />
               </div>
 
-              <div
-                style={{
-                  borderRadius: "0.75rem",
-                  border: "1px dashed #e5e7eb",
-                  padding: "1rem",
-                  fontSize: "0.85rem",
-                  color: "#6b7280",
-                }}
-              >
-                ML visualizations (feature importances, correlations)
-                will plug in here once you have a backend endpoint that
-                returns per-city features and resilience scores. For now
-                this card is just a placeholder shell – no fake numbers.
-              </div>
+              <MultiCitySummary history={history} />
+              <WhatIfPanel simResult={simResult} scenario={scenario} />
+              <MetricsHelp />
             </div>
           )}
         </section>
@@ -470,7 +559,11 @@ function MetricPill({ label, primary, secondary }) {
       }}
     >
       <div
-        style={{ fontSize: "0.75rem", textTransform: "uppercase", color: "#6b7280" }}
+        style={{
+          fontSize: "0.75rem",
+          textTransform: "uppercase",
+          color: "#6b7280",
+        }}
       >
         {label}
       </div>

@@ -1,7 +1,7 @@
 // src/components/maps/NetworkMap.jsx
+import React, { useMemo, useEffect } from "react";
 import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect } from "react";
 
 function FitBoundsToGeoJSON({ data }) {
   const map = useMap();
@@ -26,99 +26,112 @@ function FitBoundsToGeoJSON({ data }) {
 
     if (!coords.length) return;
 
-    const lats = coords.map((c) => c[0]);
-    const lngs = coords.map((c) => c[1]);
-    const latMin = Math.min(...lats);
-    const latMax = Math.max(...lats);
-    const lngMin = Math.min(...lngs);
-    const lngMax = Math.max(...lngs);
-
-    map.fitBounds(
+    const bounds = coords.reduce(
+      (acc, [lat, lng]) => {
+        return [
+          [Math.min(acc[0][0], lat), Math.min(acc[0][1], lng)],
+          [Math.max(acc[1][0], lat), Math.max(acc[1][1], lng)],
+        ];
+      },
       [
-        [latMin, lngMin],
-        [latMax, lngMax],
-      ],
-      { padding: [20, 20] }
+        [coords[0][0], coords[0][1]],
+        [coords[0][0], coords[0][1]],
+      ]
     );
+
+    map.fitBounds(bounds, { padding: [20, 20] });
   }, [data, map]);
 
   return null;
 }
 
-export default function NetworkMap({ edges, removedEdges }) {
-  // Nothing loaded yet
-  if (!edges || !edges.features || edges.features.length === 0) {
-    return (
-      <div
-        style={{
-          height: "520px",
-          borderRadius: "12px",
-          border: "1px solid #e5e7eb",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#6b7280",
-          fontSize: "0.9rem",
-        }}
-      >
-        Run a simulation to see the map.
-      </div>
-    );
-  }
+/**
+ * Main network map.
+ * - edges: full network GeoJSON
+ * - removedEdges: subset of disrupted edges (overlay in red)
+ * - mapVersion: integer used as `key` to force remount on new runs
+ */
+function NetworkMap({ edges, removedEdges, mapVersion }) {
+  const hasData = edges && edges.features && edges.features.length > 0;
 
-  // --- style for intact edges (match Legend) ---
-  const styleEdges = (feature) => {
-    const highway = feature.properties?.highway || "";
-    const isMajor =
-      highway.includes("motorway") ||
-      highway.includes("trunk") ||
-      highway.includes("primary");
+  // Basic center fallback if we have nothing
+  const defaultCenter = [40.44, -79.99]; // Pittsburgh-ish as fallback
 
-    return {
-      color: isMajor ? "#1d4ed8" : "#9ca3af", // major blue, local grey
-      weight: isMajor ? 3 : 1.4,
+  const styleEdges = useMemo(
+    () => ({
+      color: (feature) => {
+        const hw = feature?.properties?.highway;
+        const major = ["motorway", "trunk", "primary", "secondary"];
+        const isMajor =
+          Array.isArray(hw) ? hw.some((h) => major.includes(h)) : major.includes(hw);
+        return isMajor ? "#2563eb" : "#9ca3af"; // blue vs grey
+      },
+      weight: (feature) => {
+        const hw = feature?.properties?.highway;
+        const major = ["motorway", "trunk", "primary", "secondary"];
+        const isMajor =
+          Array.isArray(hw) ? hw.some((h) => major.includes(h)) : major.includes(hw);
+        return isMajor ? 3 : 1.4;
+      },
       opacity: 0.9,
-    };
-  };
+    }),
+    []
+  );
 
-  // --- style for removed edges (disrupted roads – red) ---
-  const styleRemoved = () => ({
-    color: "#ef4444",
-    weight: 3,
-    opacity: 0.95,
+  const styleRemoved = useMemo(
+    () => ({
+      color: "#dc2626", // red
+      weight: 3.2,
+      opacity: 0.95,
+    }),
+    []
+  );
+
+  // Leaflet expects a function style or plain object; we'll wrap our logic
+  const edgeStyleFn = (feature) => ({
+    color: styleEdges.color(feature),
+    weight: styleEdges.weight(feature),
+    opacity: styleEdges.opacity,
   });
 
   return (
     <div
       style={{
-        height: "520px",
-        width: "100%",
-        borderRadius: "12px",
+        background: "#ffffff",
+        borderRadius: "1rem",
         border: "1px solid #e5e7eb",
         overflow: "hidden",
       }}
     >
       <MapContainer
-        style={{ height: "100%", width: "100%" }}
-        center={[40, -95]} // fallback; will be overridden by FitBounds
-        zoom={5}
-        scrollWheelZoom={true}
+        key={mapVersion} // <— force full remount when version changes
+        center={defaultCenter}
+        zoom={11}
+        style={{ height: "520px", width: "100%" }}
       >
         <TileLayer
+          attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="&copy; OpenStreetMap contributors"
         />
 
-        {/* Base network */}
-        <GeoJSON data={edges} style={styleEdges} />
+        {hasData && (
+          <>
+            {/* Base network */}
+            <GeoJSON data={edges} style={edgeStyleFn} />
 
-        {/* Disrupted edges overlay, if any */}
-        {removedEdges && removedEdges.features && removedEdges.features.length > 0 && (
-          <GeoJSON data={removedEdges} style={styleRemoved} />
+            {/* Disrupted edges overlay, if any */}
+            {removedEdges &&
+              removedEdges.features &&
+              removedEdges.features.length > 0 && (
+                <GeoJSON data={removedEdges} style={styleRemoved} />
+              )}
+
+            <FitBoundsToGeoJSON data={edges} />
+          </>
         )}
-
-        <FitBoundsToGeoJSON data={edges} />
       </MapContainer>
     </div>
   );
 }
+
+export default NetworkMap;

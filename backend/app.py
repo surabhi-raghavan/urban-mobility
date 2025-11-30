@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Tuple, Dict, Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from shapely.geometry import mapping
@@ -16,14 +16,13 @@ from urban_resilience.edge_selection import (
     graph_to_edges_gdf,
 )
 from urban_resilience.simulation import simulate_single_shock
-from urban_resilience.usgs_flood import download_usgs_flood_features_for_city
 
 EdgeId = Tuple[int, int, int]
 
 app = FastAPI(
     title="Urban Mobility Resilience API",
-    description="Backend for 'Can Cities Survive Traffic Shocks?' project.",
-    version="0.2.0",
+    description="Backend for 'Urban Network Resilience Simulator' project.",
+    version="0.3.0",
 )
 
 # Allow frontend (any origin) – fine for class project
@@ -42,9 +41,8 @@ app.add_middleware(
 class SimRequest(BaseModel):
     city: str
     scenario: str
-    severity: float
-    n_pairs: int = 40
-    use_usgs_flood: bool = False
+    severity: float          # 0–1 fraction of edges to remove (after mapping from slider)
+    n_pairs: int = 20        # number of OD pairs to probe
 
 
 class SimResponse(BaseModel):
@@ -58,15 +56,6 @@ class SimResponse(BaseModel):
     n_pairs: int
     edges_geojson: Dict[str, Any]
     removed_edges_geojson: Dict[str, Any]
-
-
-class ProgressiveRequest(BaseModel):
-    city: str
-    scenario: str
-    severities: List[float]
-    n_pairs: int = 40
-    runs_per_severity: int = 3
-    use_usgs_flood: bool = False
 
 
 # ---------- Helper for GeoJSON building ----------
@@ -155,22 +144,16 @@ def simulate(req: SimRequest):
     4. Build GeoJSON of all edges + removed edges for Leaflet visualization.
     """
     if req.scenario not in SCENARIOS:
-        raise ValueError(f"Unknown scenario: {req.scenario}")
+        raise HTTPException(status_code=400, detail=f"Unknown scenario: {req.scenario}")
 
     # --- Load graph ---
     G = load_city_graph(req.city, cache_dir="graphs")
-
-    # --- Optional USGS flood polygons for Highway Flood ---
-    flood_polys = None
-    if req.use_usgs_flood and req.scenario == "Highway Flood":
-        flood_polys = download_usgs_flood_features_for_city(req.city)
 
     # --- Select edges to remove ---
     edge_ids: List[EdgeId] = select_edges_for_scenario(
         G,
         scenario=req.scenario,
         severity=req.severity,
-        usgs_flood_polygons=flood_polys,
         seed=42,
     )
 

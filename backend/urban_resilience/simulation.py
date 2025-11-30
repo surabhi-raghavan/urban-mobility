@@ -6,6 +6,7 @@ from typing import Iterable, List, Tuple, Optional
 
 import numpy as np
 import networkx as nx
+import math
 
 EdgeId = Tuple[int, int, int]
 
@@ -72,15 +73,39 @@ def _weight_attr(G: nx.MultiDiGraph) -> str:
     return "length"
 
 
+def _geo_heuristic(G: nx.MultiDiGraph):
+    """
+    Build an admissible heuristic function for A* based on straight-line
+    distance between node coordinates. Keeps paths optimal but can prune
+    some search.
+    """
+
+    def h(u: int, v: int) -> float:
+        ux = G.nodes[u].get("x")
+        uy = G.nodes[u].get("y")
+        vx = G.nodes[v].get("x")
+        vy = G.nodes[v].get("y")
+        if ux is None or uy is None or vx is None or vy is None:
+            return 0.0
+        dx = ux - vx
+        dy = uy - vy
+        # Euclidean distance in degrees; we're only using it as a lower bound
+        return math.hypot(dx, dy)
+
+    return h
+
+
 def simulate_single_shock(
     G: nx.MultiDiGraph,
     edge_ids_to_remove: Iterable[EdgeId],
-    n_pairs: int = 40,
+    n_pairs: int = 20,
     penalty_ratio: float = 5.0,
     seed: Optional[int] = None,
 ):
     """
     Remove specified edges, then compare A* travel times before vs after on OD pairs.
+
+    Uses an admissible geometric heuristic so A* still returns exact shortest paths.
     """
     G_before = G
     G_after = G.copy()
@@ -102,18 +127,24 @@ def simulate_single_shock(
 
     pairs = sample_od_pairs(G_before, n_pairs=n_pairs, seed=seed)
     weight = _weight_attr(G_before)
+    heuristic = _geo_heuristic(G_before)
 
     ratios: List[float] = []
     disconnected = 0
 
     for u, v in pairs:
         try:
-            baseline = nx.astar_path_length(G_before, u, v, weight=weight)
+            baseline = nx.astar_path_length(
+                G_before, u, v, heuristic=heuristic, weight=weight
+            )
         except nx.NetworkXNoPath:
+            # Should be rare, since we sampled from the largest component
             continue
 
         try:
-            damaged = nx.astar_path_length(G_after, u, v, weight=weight)
+            damaged = nx.astar_path_length(
+                G_after, u, v, heuristic=heuristic, weight=weight
+            )
             ratios.append(damaged / baseline)
         except nx.NetworkXNoPath:
             disconnected += 1
