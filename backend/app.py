@@ -1,31 +1,31 @@
 # backend/app.py
 
 from __future__ import annotations
+
 from typing import List, Tuple, Dict, Any
-from fastapi import FastAPI
+
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from shapely.geometry import mapping
 
 from urban_resilience.config import DEFAULT_CITIES, SCENARIOS
 from urban_resilience.graph_loader import load_city_graph
-from urban_resilience.edge_selection import select_edges_for_scenario, graph_to_edges_gdf
+from urban_resilience.edge_selection import (
+    select_edges_for_scenario,
+    graph_to_edges_gdf,
+)
 from urban_resilience.simulation import simulate_single_shock
-from urban_resilience.usgs_flood import download_usgs_flood_features_for_city
-from urban_resilience.ml_routes import router as ml_router
-
-import os
-import pandas as pd
 
 EdgeId = Tuple[int, int, int]
 
 app = FastAPI(
     title="Urban Mobility Resilience API",
-    version="0.2.0",
+    description="Backend for 'Urban Network Resilience Simulator' project.",
+    version="0.3.0",
 )
 
-# CORS
+# Allow frontend (any origin) – fine for class project
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,16 +34,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(ml_router)
 
-# ------------------------ DATA MODELS ------------------------
+# ---------- Pydantic models ----------
+
 
 class SimRequest(BaseModel):
     city: str
     scenario: str
-    severity: float
-    n_pairs: int = 40
-    use_usgs_flood: bool = False
+    severity: float          # 0–1 fraction of edges to remove (after mapping from slider)
+    n_pairs: int = 20        # number of OD pairs to probe
 
 
 class SimResponse(BaseModel):
@@ -59,14 +58,29 @@ class SimResponse(BaseModel):
     removed_edges_geojson: Dict[str, Any]
 
 
-# ------------------------ SIMULATION HELPERS ------------------------
+# ---------- Helper for GeoJSON building ----------
 
-def build_edges_geojson(city_graph, removed_edges: List[EdgeId]):
+
+def build_edges_geojson(
+    city_graph, removed_edges: List[EdgeId]
+) -> tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    Build two GeoJSON FeatureCollections:
+
+    - edges_geojson: all road segments in the graph
+    - removed_edges_geojson: subset corresponding to removed_edges
+
+    Each feature has properties:
+        - u, v, key
+        - bridge (bool)
+        - tunnel (bool)
+        - highway (string or None)
+    """
     gdf_edges = graph_to_edges_gdf(city_graph)
     removed_set = {(int(u), int(v), int(k)) for (u, v, k) in removed_edges}
 
-    all_features = []
-    removed_features = []
+    all_features: List[Dict[str, Any]] = []
+    removed_features: List[Dict[str, Any]] = []
 
     for _, row in gdf_edges.iterrows():
         geom = row.get("geometry")
@@ -86,23 +100,33 @@ def build_edges_geojson(city_graph, removed_edges: List[EdgeId]):
             "highway": row.get("highway", None),
         }
 
-        feat = {
+        feature = {
             "type": "Feature",
             "geometry": mapping(geom),
             "properties": props,
         }
-        all_features.append(feat)
+        all_features.append(feature)
 
         if (u, v, k) in removed_set:
-            removed_features.append(feat)
+            removed_features.append(feature)
 
-    return (
-        {"type": "FeatureCollection", "features": all_features},
-        {"type": "FeatureCollection", "features": removed_features},
-    )
+    edges_geojson = {"type": "FeatureCollection", "features": all_features}
+    removed_geojson = {"type": "FeatureCollection", "features": removed_features}
+    return edges_geojson, removed_geojson
 
 
-# ------------------------ MAIN ROUTES ------------------------
+# ---------- Routes ----------
+
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/cities")
+def list_default_cities():
+    return {"default_cities": DEFAULT_CITIES}
+
 
 @app.get("/scenarios")
 def list_scenarios():
@@ -111,19 +135,38 @@ def list_scenarios():
 
 @app.post("/simulate", response_model=SimResponse)
 def simulate(req: SimRequest):
+    """
+    Main endpoint for interactive website.
+
+    1. Load OSMnx road graph for the city.
+    2. Pick edges to remove according to scenario + severity.
+    3. Run A* based OD sampling to compute travel-time ratios.
+    4. Build GeoJSON of all edges + removed edges for Leaflet visualization.
+    """
+    if req.scenario not in SCENARIOS:
+        raise HTTPException(status_code=400, detail=f"Unknown scenario: {req.scenario}")
+
+    # --- Load graph ---
     G = load_city_graph(req.city, cache_dir="graphs")
 
-    flood_polys = None
-    if req.use_usgs_flood and req.scenario == "Highway Flood":
-        flood_polys = download_usgs_flood_features_for_city(req.city)
-
-    edge_ids = select_edges_for_scenario(
-        G, req.scenario, severity=req.severity, usgs_flood_polygons=flood_polys
+    # --- Select edges to remove ---
+    edge_ids: List[EdgeId] = select_edges_for_scenario(
+        G,
+        scenario=req.scenario,
+        severity=req.severity,
+        seed=42,
     )
 
-    metrics = simulate_single_shock(G, edge_ids, n_pairs=req.n_pairs)
+    # --- Run simulation metrics ---
+    metrics = simulate_single_shock(
+        G,
+        edge_ids_to_remove=edge_ids,
+        n_pairs=req.n_pairs,
+        seed=123,
+    )
 
-    edges_geo, removed_geo = build_edges_geojson(G, edge_ids)
+    # --- Build GeoJSON for Leaflet ---
+    edges_geojson, removed_geojson = build_edges_geojson(G, edge_ids)
 
     return SimResponse(
         city=req.city,
@@ -134,62 +177,6 @@ def simulate(req: SimRequest):
         pct_disconnected=metrics["pct_disconnected"],
         n_removed_edges=metrics["n_removed_edges"],
         n_pairs=metrics["n_pairs"],
-        edges_geojson=edges_geo,
-        removed_edges_geojson=removed_geo,
+        edges_geojson=edges_geojson,
+        removed_edges_geojson=removed_geojson,
     )
-
-
-# ------------------------ ML EVALUATION ROUTES (OPTION A) ------------------------
-
-EVAL_DIR = "evaluation_outputs"
-@app.get("/ml/eval/metrics")
-def get_ml_global_metrics():
-    df = pd.read_csv(f"{EVAL_DIR}/metrics_summary.csv")
-    return df.to_dict(orient="records")[0]
-
-
-@app.get("/ml/eval/predictions")
-def get_ml_predictions():
-    df = pd.read_csv(f"{EVAL_DIR}/model_predictions.csv")
-    return df.to_dict(orient="records")
-
-
-@app.get("/ml/eval/scenario_mae")
-def get_ml_scenario_mae():
-    df = pd.read_csv(f"{EVAL_DIR}/scenario_wise_mae.csv")
-    return df.to_dict(orient="records")
-
-@app.get("/ml/eval/feature_importances")
-def get_ml_feature_importances():
-    import pandas as pd
-    df = pd.read_csv("evaluation_outputs/feature_importances.csv")
-    return df.to_dict(orient="records")
-# ------------------------ SERVE PNG IMAGES ------------------------
-
-@app.get("/ml/eval/image/{name}")
-def get_evaluation_image(name: str):
-    """
-    Serves any of these image files:
-
-    - pred_vs_actual.png
-    - residual_distribution.png
-    - feature_importances.png
-    - scenario_wise_mae.png
-    - severity_vs_error.png
-    """
-    img_path = os.path.join(EVAL_DIR, name)
-
-    if not img_path.endswith(".png"):
-        return {"error": "Only PNG images allowed"}
-
-    if not os.path.exists(img_path):
-        return {"error": f"Image not found: {name}"}
-
-    return FileResponse(img_path)
-
-from fastapi.responses import FileResponse
-
-# Feature importances IMAGE
-@app.get("/ml/eval/feature_importances")
-def feature_importances_image():
-    return FileResponse("evaluation_outputs/feature_importances.png")

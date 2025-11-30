@@ -5,7 +5,6 @@ from __future__ import annotations
 from .config import DEFAULT_CITIES, SCENARIOS
 from .experiments import (
     run_single_scenario_for_city,
-    run_progressive_damage_experiment,
 )
 from .usgs_flood import download_usgs_flood_features_for_city
 

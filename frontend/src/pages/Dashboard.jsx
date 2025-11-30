@@ -6,8 +6,25 @@ import Legend from "../components/Legend";
 import NetworkMap from "../components/maps/NetworkMap";
 import ComparisonMaps from "../components/maps/ComparisonMaps";
 import { fetchScenarios, runSimulation } from "../api/client";
-import MLDashboard from "./MLDashboard";
-import Evaluation from "./Evaluation.jsx";
+
+import MetricsHelp from "../components/metrics/MetricsHelp";
+import ScenarioInsights from "../components/insights/ScenarioInsights";
+import TimeOfDayImpact from "../components/insights/TimeOfDayImpact";
+import MultiCitySummary from "../components/insights/MultiCitySummary";
+import WhatIfPanel from "../components/insights/WhatIfPanel";
+
+// Map slider percentage (5–80) to severity (0.01–0.5)
+function mapIntensityToSeverity(intensityPercent) {
+  const minSlider = 5;
+  const maxSlider = 80;
+  const minSeverity = 0.01;
+  const maxSeverity = 0.5;
+
+  const clamped = Math.min(maxSlider, Math.max(minSlider, intensityPercent));
+  const t = (clamped - minSlider) / (maxSlider - minSlider); // 0 → 1
+  const severity = minSeverity + t * (maxSeverity - minSeverity);
+  return Number(severity.toFixed(3));
+}
 
 function Dashboard() {
   const [scenarios, setScenarios] = useState([]);
@@ -16,27 +33,28 @@ function Dashboard() {
   const [selectedCity, setSelectedCity] = useState(null);
   const [cityOverride, setCityOverride] = useState("");
 
-  const [scenario, setScenario] = useState("");
+  const [scenario, setScenario] = useState(""); // no default
   const [intensity, setIntensity] = useState(40);
   const [nPairs, setNPairs] = useState(40);
-  const [useUSGS, setUseUSGS] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState("");
   const [simResult, setSimResult] = useState(null);
+
+  // edgesGeo = baseline/intact network; removedGeo = disrupted subset
   const [edgesGeo, setEdgesGeo] = useState(null);
   const [removedGeo, setRemovedGeo] = useState(null);
 
-  const [resilienceHistory, setResilienceHistory] = useState([]);
-  const [cityRankings, setCityRankings] = useState([]);
-  const [allCityResilience, setAllCityResilience] = useState([]);
+  const [history, setHistory] = useState([]);
+
+  // Force Leaflet map remount when this increments
+  const [mapVersion, setMapVersion] = useState(0);
 
   useEffect(() => {
-    fetchScenarios().then((scs) => {
-      setScenarios(scs);
-      if (!scenario && scs.length) setScenario(scs[0]);
-    });
-  }, [scenario]);
+    fetchScenarios()
+      .then((scs) => setScenarios(scs))
+      .catch((e) => console.error(e));
+  }, []);
 
   const effectiveCityString = useMemo(() => {
     if (cityOverride.trim()) return cityOverride.trim();
@@ -44,65 +62,61 @@ function Dashboard() {
     return "";
   }, [cityOverride, selectedCity]);
 
-  const severity = useMemo(() => {
-    const frac = intensity / 100;
-    return 0.01 + frac * (0.5 - 0.01);
-  }, [intensity]);
+  const severity = useMemo(
+    () => mapIntensityToSeverity(intensity),
+    [intensity]
+  );
 
   const handleRun = async () => {
-    if (!effectiveCityString) return alert("Select a city first.");
-    if (!scenario) return alert("Choose a disruption type.");
+    if (!effectiveCityString) {
+      alert("Select a city first.");
+      return;
+    }
+    if (!scenario) {
+      alert("Choose a disruption type.");
+      return;
+    }
+
+    console.log("Running simulation with:", {
+      city: effectiveCityString,
+      scenario,
+      intensity,
+      severity,
+      nPairs,
+    });
 
     try {
       setLoading(true);
-      setStatus("Loading network…");
+      setStatus("Running simulation…");
 
       const res = await runSimulation({
         city: effectiveCityString,
         scenario,
         severity,
         nPairs,
-        useUSGS,
       });
 
       setSimResult(res);
-      // Save resilience history (trend)
-      if (res.avg_ratio > 0) {
-        const resilienceValue = (1 / res.avg_ratio) * 100;
-        setResilienceHistory((h) => [
-          ...h,
-          { resilience: resilienceValue, timestamp: Date.now() },
-        ]);
-      }
       setEdgesGeo(res.edges_geojson);
       setRemovedGeo(res.removed_edges_geojson);
       setStatus("Done.");
+      setMapVersion((v) => v + 1); // bump map version on each run
 
-      // Auto compute rankings for all default cities if not computed
-      if (cityRankings.length === 0) {
-        const citiesToCompare = [
-          "Chicago, Illinois, USA",
-          "Pittsburgh, Pennsylvania, USA",
-          "San Francisco, California, USA",
-          "Boston, Massachusetts, USA",
-        ];
-
-        Promise.all(
-          citiesToCompare.map(async (c) => {
-            const res2 = await runSimulation({
-              city: c,
-              scenario,
-              severity,
-              nPairs,
-              useUSGS,
-            });
-            return {
-              city: c,
-              resilience: res2.avg_ratio > 0 ? (1 / res2.avg_ratio) * 100 : 0,
-            };
-          })
-        ).then((scores) => setCityRankings(scores));
-      }
+      setHistory((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          cityQuery: effectiveCityString,
+          cityLabel: selectedCity?.label || effectiveCityString,
+          scenario,
+          severity,
+          nPairs,
+          avgRatio: res.avg_ratio,
+          medianRatio: res.median_ratio,
+          pctDisconnected: res.pct_disconnected,
+          nRemovedEdges: res.n_removed_edges,
+        },
+      ]);
     } catch (err) {
       console.error(err);
       setStatus("Error running simulation.");
@@ -112,14 +126,17 @@ function Dashboard() {
     }
   };
 
-  // ----- FIX: SAFE METRIC COMPUTATION -----
-  const totalRoads = edgesGeo?.features?.length ?? 0;
-  const disrupted = simResult?.n_removed_edges ?? 0;
+  const totalRoads = edgesGeo?.features?.length || 0;
+  const disrupted = simResult?.n_removed_edges || 0;
   const remaining = totalRoads - disrupted;
   const resilienceScore =
-    simResult?.avg_ratio && simResult.avg_ratio > 0
+    simResult && simResult.avg_ratio > 0
       ? (1 / simResult.avg_ratio) * 100
       : null;
+
+  const hasCity = !!selectedCity;
+  const hasBaseline = hasCity && !!edgesGeo;
+  const canRun = !!effectiveCityString && !!scenario && !loading;
 
   return (
     <main
@@ -135,17 +152,28 @@ function Dashboard() {
           setSelectedCity(city);
           setCityOverride("");
 
+          // Reset disruption + baseline state for new city
+          setSimResult(null);
+          setRemovedGeo(null);
+          setEdgesGeo(null); // so we don't show previous city while loading
+          setStatus("Loading baseline network…");
+
+          // Use a tiny random-failure shock just to get edges_geojson.
           runSimulation({
             city: city.query,
             scenario: "Random Failure",
             severity: 0.01,
             nPairs: 10,
-            useUSGS: false,
-          }).then((res) => {
-            setSimResult(res);
-            setEdgesGeo(res.edges_geojson);
-            setRemovedGeo(null);
-          });
+          })
+            .then((res) => {
+              setEdgesGeo(res.edges_geojson);
+              setStatus("Baseline network loaded.");
+              setMapVersion((v) => v + 1); // bump when baseline changes
+            })
+            .catch((err) => {
+              console.error(err);
+              setStatus("Error loading baseline network.");
+            });
         }}
       />
 
@@ -159,18 +187,40 @@ function Dashboard() {
           alignItems: "flex-start",
         }}
       >
-        {/* LEFT PANEL */}
+        {/* LEFT: controls */}
         <section
           style={{
-            background: "#fff",
+            background: "#ffffff",
             padding: "1.25rem",
             borderRadius: "1rem",
             border: "1px solid #e5e7eb",
           }}
         >
-          <h3>Apply Disruption</h3>
+          <h3 style={{ marginTop: 0 }}>Apply Disruption</h3>
+          <p
+            style={{
+              marginTop: 0,
+              fontSize: "0.85rem",
+              color: "#6b7280",
+              marginBottom: "1rem",
+            }}
+          >
+            {hasCity
+              ? "Select a disruption type and intensity for this city."
+              : "Choose a city, then set up a disruption to simulate."}
+          </p>
 
-          <label>Intensity</label>
+          {/* Intensity slider */}
+          <label
+            style={{
+              display: "block",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              marginBottom: 4,
+            }}
+          >
+            Disruption Intensity
+          </label>
           <input
             type="range"
             min={5}
@@ -180,20 +230,50 @@ function Dashboard() {
             onChange={(e) => setIntensity(Number(e.target.value))}
             style={{ width: "100%" }}
           />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              fontSize: "0.8rem",
+              color: "#6b7280",
+              marginBottom: "0.75rem",
+            }}
+          >
+            <span>Minor</span>
+            <span>{intensity}%</span>
+            <span>Catastrophic</span>
+          </div>
 
-          <label>Disruption Type</label>
-          <div style={{ display: "grid", gap: "0.4rem" }}>
+          {/* Scenario buttons */}
+          <label
+            style={{
+              display: "block",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              marginBottom: 4,
+            }}
+          >
+            Disruption Type
+          </label>
+          <div
+            style={{ display: "grid", gap: "0.4rem", marginBottom: "0.75rem" }}
+          >
             {scenarios.map((sc) => (
               <button
                 key={sc}
+                type="button"
                 onClick={() => setScenario(sc)}
                 style={{
                   textAlign: "left",
                   borderRadius: "0.75rem",
                   border:
-                    scenario === sc ? "1px solid #4f46e5" : "1px solid #e5e7eb",
-                  background: scenario === sc ? "#eef2ff" : "#f9fafb",
+                    scenario === sc
+                      ? "1px solid #4f46e5"
+                      : "1px solid #e5e7eb",
+                  background:
+                    scenario === sc ? "#eef2ff" : "#f9fafb",
                   padding: "0.45rem 0.75rem",
+                  fontSize: "0.9rem",
                   cursor: "pointer",
                 }}
               >
@@ -202,53 +282,191 @@ function Dashboard() {
             ))}
           </div>
 
-          <button
-            onClick={handleRun}
-            disabled={loading || !effectiveCityString}
+          {/* OD pairs */}
+          <label
+            style={{
+              display: "block",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              marginBottom: 4,
+            }}
+          >
+            Number of OD pairs
+          </label>
+          <input
+            type="number"
+            min={10}
+            max={200}
+            value={nPairs}
+            onChange={(e) => setNPairs(Number(e.target.value))}
             style={{
               width: "100%",
-              padding: "0.6rem",
-              marginTop: "1rem",
+              padding: "0.4rem 0.6rem",
+              borderRadius: "0.5rem",
+              border: "1px solid #e5e7eb",
+              fontSize: "0.9rem",
+              marginBottom: "0.75rem",
+            }}
+          />
+
+          {/* Run button */}
+          <button
+            type="button"
+            onClick={handleRun}
+            disabled={!canRun}
+            style={{
+              width: "100%",
+              padding: "0.6rem 1rem",
               borderRadius: "999px",
-              background: "#111827",
-              color: "white",
+              border: "none",
+              background: canRun ? "#111827" : "#9ca3af",
+              color: "#ffffff",
+              fontWeight: 600,
+              cursor: canRun ? "pointer" : "not-allowed",
+              marginBottom: "0.35rem",
             }}
           >
             {loading ? "Running…" : "Run Simulation"}
           </button>
-
-          <div style={{ fontSize: "0.8rem", color: "#6b7280" }}>{status}</div>
+          <div
+            style={{
+              fontSize: "0.8rem",
+              color: "#6b7280",
+              minHeight: "1.2em",
+            }}
+          >
+            {status}
+          </div>
         </section>
 
-        {/* RIGHT CONTENT */}
+        {/* RIGHT: main content */}
         <section
           style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          {/* VISUAL TAB */}
           {activeTab === "visual" && (
             <>
-              <h3>
-                {selectedCity
-                  ? `${selectedCity.label} Road Network`
-                  : "Road Network Visualization"}
-              </h3>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "baseline",
+                }}
+              >
+                <div>
+                  <h3 style={{ margin: 0 }}>
+                    {hasCity
+                      ? `${selectedCity.label} Road Network`
+                      : "Road Network Visualization"}
+                  </h3>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "0.85rem",
+                      color: "#6b7280",
+                    }}
+                  >
+                    {!hasCity
+                      ? "Select a city to load its baseline road network."
+                      : simResult
+                      ? "Drivable road network after disruption."
+                      : "Baseline road network before any disruption."}
+                  </p>
+                </div>
+                {simResult && (
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "1rem",
+                      fontSize: "0.85rem",
+                    }}
+                  >
+                    <MetricPill
+                      label="Active Roads"
+                      primary={remaining.toLocaleString()}
+                      secondary={
+                        disrupted > 0
+                          ? `–${disrupted.toLocaleString()} impacted`
+                          : ""
+                      }
+                    />
+                    <MetricPill
+                      label="Resilience"
+                      primary={
+                        resilienceScore != null
+                          ? `${resilienceScore.toFixed(1)}%`
+                          : "—"
+                      }
+                      secondary={
+                        simResult?.pct_disconnected != null
+                          ? `${simResult.pct_disconnected.toFixed(
+                              1
+                            )}% OD pairs disconnected`
+                          : ""
+                      }
+                    />
+                  </div>
+                )}
+              </div>
 
-              <NetworkMap
-                edges={edgesGeo}
-                removedEdges={removedGeo}
-                scenario={scenario}
-              />
-              <Legend />
+              {!hasCity ? (
+                <div
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: "1rem",
+                    border: "1px solid #e5e7eb",
+                    padding: "2.5rem 1.5rem",
+                    textAlign: "center",
+                    color: "#6b7280",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  Use the city search above to pick one of the study cities.
+                  The map and metrics will appear here once a baseline network
+                  is loaded.
+                </div>
+              ) : !hasBaseline ? (
+                <div
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: "1rem",
+                    border: "1px solid #e5e7eb",
+                    padding: "2.5rem 1.5rem",
+                    textAlign: "center",
+                    color: "#6b7280",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  Loading baseline network for{" "}
+                  <strong>{selectedCity.label}</strong>…
+                </div>
+              ) : (
+                <>
+                  <NetworkMap
+                    edges={edgesGeo}
+                    removedEdges={removedGeo}
+                    mapVersion={mapVersion}
+                  />
+                  <Legend />
+                  <ScenarioInsights
+                    city={selectedCity?.label || effectiveCityString}
+                    scenario={scenario}
+                    simResult={simResult}
+                  />
+                </>
+              )}
             </>
           )}
 
-          {/* COMPARISON */}
           {activeTab === "comparison" && (
             <div
               style={{
-                background: "#fff",
+                background: "#ffffff",
                 padding: "1.25rem",
                 borderRadius: "1rem",
+                border: "1px solid #e5e7eb",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
               }}
             >
               <ComparisonMaps
@@ -257,144 +475,103 @@ function Dashboard() {
                 scenario={scenario}
                 metrics={simResult}
               />
+              <TimeOfDayImpact simResult={simResult} />
             </div>
           )}
 
-          {/* —— ENHANCED RESILIENCE TAB —— */}
           {activeTab === "resilience" && (
             <div
               style={{
+                background: "#ffffff",
                 padding: "1.25rem",
                 borderRadius: "1rem",
                 border: "1px solid #e5e7eb",
-                background: "#fff",
                 display: "flex",
                 flexDirection: "column",
-                gap: "1.5rem",
+                gap: "1rem",
               }}
             >
-              <h3>Resilience Analysis & City Comparison</h3>
-
-              {/* CITY B SELECTION */}
-              <div style={{ display: "flex", gap: "1rem" }}>
-                <div style={{ flex: 1 }}>
-                  <h4>Primary City</h4>
-                  <p style={{ color: "#6b7280" }}>
-                    Selected: {effectiveCityString || "None"}
-                  </p>
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <h4>Compare With</h4>
-                  <input
-                    type="text"
-                    placeholder="Enter second city (e.g., Boston, MA)"
-                    value={cityOverrideCompare || ""}
-                    onChange={(e) => setCityOverrideCompare(e.target.value)}
-                    style={{
-                      width: "100%",
-                      padding: "0.5rem",
-                      borderRadius: "8px",
-                      border: "1px solid #ccc",
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* ONE BUTTON */}
-              <button
-                onClick={handleCompareCities}
+              <h3 style={{ marginTop: 0 }}>Resilience Analysis</h3>
+              <p
                 style={{
-                  padding: "0.6rem 1rem",
-                  background: "#4f46e5",
-                  color: "white",
-                  borderRadius: "8px",
-                  fontWeight: 600,
-                  marginTop: "0.5rem",
+                  marginTop: 0,
+                  fontSize: "0.85rem",
+                  color: "#6b7280",
                 }}
               >
-                Compare Cities
-              </button>
+                This view summarizes how structural network features relate to
+                resilience once you aggregate simulations across cities and
+                scenarios.
+              </p>
 
-              {/* RESULTS SECTION */}
-              {compareResults && (
-                <div
-                  style={{
-                    marginTop: "1.5rem",
-                    padding: "1rem",
-                    borderRadius: "12px",
-                    background: "#f9fafb",
-                    border: "1px solid #e5e7eb",
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: "1.5rem",
-                  }}
-                >
-                  <div>
-                    <h4>{compareResults.cityA.city}</h4>
-                    <SummaryCard
-                      title="Resilience Score"
-                      value={`${compareResults.cityA.score.toFixed(1)}%`}
-                    />
-                    <SummaryCard
-                      title="Disrupted Roads"
-                      value={compareResults.cityA.disrupted}
-                    />
-                    <SummaryCard
-                      title="Remaining Roads"
-                      value={compareResults.cityA.remaining}
-                    />
-                  </div>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+                  gap: "0.75rem",
+                }}
+              >
+                <SummaryCard
+                  title="Total Simulations"
+                  value={history.length}
+                />
+                <SummaryCard
+                  title="Avg Resilience (this run)"
+                  value={
+                    resilienceScore != null
+                      ? `${resilienceScore.toFixed(1)}%`
+                      : "—"
+                  }
+                />
+                <SummaryCard
+                  title="Cities Tested"
+                  value={new Set(history.map((h) => h.cityLabel)).size}
+                />
+                <SummaryCard
+                  title="Most Recent City"
+                  value={
+                    history.length
+                      ? history[history.length - 1].cityLabel
+                      : "—"
+                  }
+                />
+              </div>
 
-                  <div>
-                    <h4>{compareResults.cityB.city}</h4>
-                    <SummaryCard
-                      title="Resilience Score"
-                      value={`${compareResults.cityB.score.toFixed(1)}%`}
-                    />
-                    <SummaryCard
-                      title="Disrupted Roads"
-                      value={compareResults.cityB.disrupted}
-                    />
-                    <SummaryCard
-                      title="Remaining Roads"
-                      value={compareResults.cityB.remaining}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ML INSIGHTS */}
-          {activeTab === "ml" && (
-            <div
-              style={{
-                background: "#fff",
-                padding: "1.25rem",
-                borderRadius: "1rem",
-                border: "1px solid #e5e7eb",
-              }}
-            >
-              <MLDashboard city={effectiveCityString} />
-            </div>
-          )}
-
-          {activeTab === "evaluation" && (
-            <div
-              style={{
-                background: "#fff",
-                padding: "1.25rem",
-                borderRadius: "1rem",
-                border: "1px solid #e5e7eb",
-              }}
-            >
-              <Evaluation />
+              <MultiCitySummary history={history} />
+              <WhatIfPanel simResult={simResult} scenario={scenario} />
+              <MetricsHelp />
             </div>
           )}
         </section>
       </div>
     </main>
+  );
+}
+
+function MetricPill({ label, primary, secondary }) {
+  return (
+    <div
+      style={{
+        padding: "0.4rem 0.8rem",
+        borderRadius: "999px",
+        background: "#f9fafb",
+        border: "1px solid #e5e7eb",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "0.75rem",
+          textTransform: "uppercase",
+          color: "#6b7280",
+        }}
+      >
+        {label}
+      </div>
+      <div style={{ fontWeight: 600, fontSize: "0.95rem" }}>{primary}</div>
+      {secondary && (
+        <div style={{ fontSize: "0.75rem", color: "#9ca3af" }}>{secondary}</div>
+      )}
+    </div>
   );
 }
 
@@ -404,11 +581,18 @@ function SummaryCard({ title, value }) {
       style={{
         padding: "0.9rem 1rem",
         borderRadius: "0.9rem",
-        background: "#f9fafb",
-        border: "1px solid #e5e7eb",
+        background: "linear-gradient(135deg,#eef2ff,#f5f3ff)",
+        border: "1px solid #e0e7ff",
       }}
     >
-      <div style={{ fontSize: "0.8rem", color: "#6b7280", marginBottom: 4 }}>
+      <div
+        style={{
+          fontSize: "0.8rem",
+          textTransform: "uppercase",
+          color: "#6b7280",
+          marginBottom: 4,
+        }}
+      >
         {title}
       </div>
       <div style={{ fontWeight: 700, fontSize: "1.1rem" }}>{value}</div>

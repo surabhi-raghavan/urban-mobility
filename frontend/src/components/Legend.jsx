@@ -2,11 +2,9 @@
 
 function Legend() {
   const items = [
-    { color: "#9ca3af", label: "Local roads", dashed: false },
-    { color: "#1d4ed8", label: "Major highways", dashed: false },
-    { color: "#ef4444", label: "Disrupted roads", dashed: false },
-    { color: "#22c55e", label: "Major hubs", dashed: false },
-    { color: "#3b82f6", label: "Intersections", dashed: false },
+    { color: "#9ca3af", label: "Local roads" },      // gray
+    { color: "#1d4ed8", label: "Major highways" },   // blue
+    { color: "#ef4444", label: "Disrupted roads" },  // red
   ];
 
   return (
@@ -14,6 +12,7 @@ function Legend() {
       style={{
         display: "flex",
         flexWrap: "wrap",
+        alignItems: "center",
         gap: "0.75rem",
         padding: "0.75rem 1rem",
         borderRadius: "0.75rem",
@@ -23,27 +22,36 @@ function Legend() {
         marginTop: "0.75rem",
       }}
     >
-      {items.map((it) => (
-        <div
-          key={it.label}
-          style={{ display: "flex", alignItems: "center", gap: 6 }}
-        >
-          <span
+      {/* Left group: legend items */}
+      <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
+        {items.map((it) => (
+          <div
+            key={it.label}
             style={{
-              width: 24,
-              height: 0,
-              borderTop: `3px ${
-                it.dashed ? "dashed" : "solid"
-              } ${it.color}`,
-              display: "inline-block",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              minWidth: "fit-content",
             }}
-          />
-          <span>{it.label}</span>
-        </div>
-      ))}
-      <span style={{ marginLeft: "auto", opacity: 0.8 }}>
-        Drag to pan · Scroll to zoom
-      </span>
+          >
+            <span
+              style={{
+                width: 24,
+                height: 0,
+                borderTop: `3px solid ${it.color}`,
+                display: "inline-block",
+              }}
+            />
+            <span>{it.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Spacer */}
+      <div style={{ flexGrow: 1 }} />
+
+      {/* Right side hint */}
+      <span style={{ opacity: 0.75 }}>Drag to pan · Scroll to zoom</span>
     </div>
   );
 }
