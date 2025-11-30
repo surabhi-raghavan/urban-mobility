@@ -15,3 +15,7 @@ SCENARIOS = [
     "Targeted Attack (Top k%)",
     "Random Failure",
 ]
+
+SEVERITIES = [0.3, 0.5, 0.7]  # ~30%, 50%, 70% disruption
+N_PAIRS_PER_RUN = 30          # OD pairs per run for richer stats
+RUNS_PER_SETTING = 5          # how many times to repeat each config
