@@ -13,6 +13,9 @@ import TimeOfDayImpact from "../components/insights/TimeOfDayImpact";
 import MultiCitySummary from "../components/insights/MultiCitySummary";
 import WhatIfPanel from "../components/insights/WhatIfPanel";
 
+// ✅ NEW: ML tab component
+import MLDashboard from "./MLDashboard";
+
 // Map slider percentage (5–80) to severity (0.01–0.5)
 function mapIntensityToSeverity(intensityPercent) {
   const minSlider = 5;
@@ -267,11 +270,8 @@ function Dashboard() {
                   textAlign: "left",
                   borderRadius: "0.75rem",
                   border:
-                    scenario === sc
-                      ? "1px solid #4f46e5"
-                      : "1px solid #e5e7eb",
-                  background:
-                    scenario === sc ? "#eef2ff" : "#f9fafb",
+                    scenario === sc ? "1px solid #4f46e5" : "1px solid #e5e7eb",
+                  background: scenario === sc ? "#eef2ff" : "#f9fafb",
                   padding: "0.45rem 0.75rem",
                   fontSize: "0.9rem",
                   cursor: "pointer",
@@ -420,9 +420,9 @@ function Dashboard() {
                     fontSize: "0.9rem",
                   }}
                 >
-                  Use the city search above to pick one of the study cities.
-                  The map and metrics will appear here once a baseline network
-                  is loaded.
+                  Use the city search above to pick one of the study cities. The
+                  map and metrics will appear here once a baseline network is
+                  loaded.
                 </div>
               ) : !hasBaseline ? (
                 <div
@@ -511,10 +511,7 @@ function Dashboard() {
                   gap: "0.75rem",
                 }}
               >
-                <SummaryCard
-                  title="Total Simulations"
-                  value={history.length}
-                />
+                <SummaryCard title="Total Simulations" value={history.length} />
                 <SummaryCard
                   title="Avg Resilience (this run)"
                   value={
@@ -530,9 +527,7 @@ function Dashboard() {
                 <SummaryCard
                   title="Most Recent City"
                   value={
-                    history.length
-                      ? history[history.length - 1].cityLabel
-                      : "—"
+                    history.length ? history[history.length - 1].cityLabel : "—"
                   }
                 />
               </div>
@@ -540,6 +535,43 @@ function Dashboard() {
               <MultiCitySummary history={history} />
               <WhatIfPanel simResult={simResult} scenario={scenario} />
               <MetricsHelp />
+            </div>
+          )}
+
+          {/* ✅ NEW: ML tab */}
+          {activeTab === "ml" && (
+            <div
+              style={{
+                background: "#ffffff",
+                padding: "1.25rem",
+                borderRadius: "1rem",
+                border: "1px solid #e5e7eb",
+                display: "flex",
+                flexDirection: "column",
+                gap: "1rem",
+              }}
+            >
+              <h3 style={{ marginTop: 0, marginBottom: "0.5rem" }}>
+                ML Resilience Lab
+              </h3>
+              <p
+                style={{
+                  marginTop: 0,
+                  fontSize: "0.85rem",
+                  color: "#6b7280",
+                  marginBottom: "0.5rem",
+                }}
+              >
+                Explore how graph structure and disruption parameters drive
+                resilience using a Random Forest model trained on the small
+                simulation dataset.
+              </p>
+
+              <MLDashboard
+                currentCityLabel={selectedCity?.label || effectiveCityString}
+                currentScenario={scenario}
+                currentSeverity={severity}
+              />
             </div>
           )}
         </section>

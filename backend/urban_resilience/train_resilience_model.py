@@ -17,6 +17,7 @@ DATA_PATH = "data/resilience_dataset.csv"
 MODEL_DIR = "models"
 MODEL_PATH = os.path.join(MODEL_DIR, "resilience_rf.pkl")
 FEAT_IMPORTANCES_PATH = os.path.join(MODEL_DIR, "feature_importances.csv")
+META_PATH = os.path.join(MODEL_DIR, "resilience_rf_meta.joblib")   # NEW
 
 
 def load_dataset(path: str = DATA_PATH) -> pd.DataFrame:
@@ -55,12 +56,12 @@ def prepare_features(df: pd.DataFrame):
     feature_names: List[str] = list(X.columns)
     X_values = X.values
 
-    return X_values, y, feature_names, df
+    return X_values, y, feature_names, df, df_scn.columns.tolist()
 
 
 def train_and_evaluate():
     df = load_dataset()
-    X, y, feature_names, df_full = prepare_features(df)
+    X, y, feature_names, df_full, scenario_onehot_cols = prepare_features(df)
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.25, random_state=42
@@ -101,6 +102,14 @@ def train_and_evaluate():
 
     fi_df.to_csv(FEAT_IMPORTANCES_PATH, index=False)
     print(f"Saved feature importances to {FEAT_IMPORTANCES_PATH}")
+
+    # 🔥 NEW: save metadata so inference knows feature order + scenario names
+    meta = {
+        "feature_names": feature_names,
+        "scenario_onehot_cols": scenario_onehot_cols,
+    }
+    joblib.dump(meta, META_PATH)
+    print(f"Saved meta to {META_PATH}")
 
     print("\nTop 10 important features:")
     print(fi_df.head(10))

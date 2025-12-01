@@ -2,167 +2,213 @@
 
 from __future__ import annotations
 
-from typing import Dict, Any, List
+from pathlib import Path
+from typing import Dict, Any, List, Tuple
 
-import os
-
-import joblib
 import numpy as np
 import pandas as pd
+from sklearn.ensemble import RandomForestRegressor  # type: ignore
+import joblib
 
-from .ml_features import compute_city_features
-from .graph_loader import load_city_graph
-from .train_resilience_model import load_dataset, prepare_features
+# backend/urban_resilience/ml_service.py
+# BASE_DIR = backend/
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Paths must match what you used in train_resilience_model.py
-DATA_PATH = "data/resilience_dataset.csv"
-MODEL_PATH = "models/resilience_rf.pkl"
-FEATURE_IMPORTANCES_PATH = "models/feature_importances.csv"
+DATA_PATH = Path(
+    "/Users/surabhiraghavan/Documents/Sem 3/Network Science and Analysis/urban-mobility/backend/data/resilience_dataset.csv"
+)
 
+MODEL_PATH = Path(
+    "/Users/surabhiraghavan/Documents/Sem 3/Network Science and Analysis/urban-mobility/backend/models/resilience_rf.pkl"
+)
 
-class MLNotReadyError(RuntimeError):
-    """Raised when the ML artifacts are missing (model / data / importances)."""
-    pass
+SCENARIO_NAMES = [
+    "Bridge Collapse",
+    "Tunnel Closure",
+    "Highway Flood",
+    "Targeted Attack (Top k%)",
+    "Random Failure",
+]
 
-
-# ---------- Load model + feature schema at import time ----------
-
-def _load_model_and_schema():
-    if not os.path.exists(MODEL_PATH):
-        raise MLNotReadyError(
-            f"Trained model not found at {MODEL_PATH}. "
-            "Run `python -m urban_resilience.train_resilience_model` first."
-        )
-    if not os.path.exists(DATA_PATH):
-        raise MLNotReadyError(
-            f"Training dataset not found at {DATA_PATH}. "
-            "Run `python -m urban_resilience.build_ml_dataset` first."
-        )
-
-    df = load_dataset(DATA_PATH)
-    X, y, feature_names, df_full = prepare_features(df)
-
-    model = joblib.load(MODEL_PATH)
-
-    # Scenario names from training (raw labels)
-    scenario_names = sorted(df_full["scenario"].unique())
-    scenario_dummy_cols = [c for c in feature_names if c.startswith("scenario_")]
-
-    return model, feature_names, scenario_names, scenario_dummy_cols
+_model: RandomForestRegressor | None = None
+_df: pd.DataFrame | None = None
+_feature_cols: List[str] | None = None
+_cities: List[str] | None = None
 
 
-try:
-    MODEL, FEATURE_NAMES, SCENARIO_NAMES, SCENARIO_DUMMY_COLS = _load_model_and_schema()
-except MLNotReadyError:
-    # Allow API import even if ML not ready; endpoints will raise on use.
-    MODEL = None
-    FEATURE_NAMES = []
-    SCENARIO_NAMES = []
-    SCENARIO_DUMMY_COLS = []
+def _load_df() -> pd.DataFrame:
+    global _df, _feature_cols, _cities
+    if _df is None:
+        if not DATA_PATH.exists():
+            raise RuntimeError(f"Dataset not found at {DATA_PATH}")
+        df = pd.read_csv(DATA_PATH)
+        # Normalize column names if needed
+        df.columns = [c.strip() for c in df.columns]
+
+        # Feature columns: everything except city, scenario, label
+        excluded = {"city", "scenario", "label_resilience_score"}
+        feature_cols = [c for c in df.columns if c not in excluded]
+
+        _df = df
+        _feature_cols = feature_cols
+        _cities = sorted(df["city"].unique().tolist())
+    return _df
 
 
-# ---------- Public helpers ----------
+def _load_model() -> RandomForestRegressor:
+    global _model
+    if _model is None:
+        if not MODEL_PATH.exists():
+            raise RuntimeError(f"Model not found at {MODEL_PATH}")
+        _model = joblib.load(MODEL_PATH)
+    return _model
+
 
 def ml_is_ready() -> bool:
-    return MODEL is not None and len(FEATURE_NAMES) > 0
+    try:
+        _load_df()
+        _load_model()
+        return True
+    except Exception:
+        return False
+
+
+def get_scenario_names() -> List[str]:
+    return SCENARIO_NAMES
+
+
+def get_cities() -> List[str]:
+    _load_df()
+    return _cities or []
+
+
+def _ensure_loaded() -> Tuple[pd.DataFrame, RandomForestRegressor, List[str]]:
+    df = _load_df()
+    model = _load_model()
+    if _feature_cols is None:
+        raise RuntimeError("Feature columns not initialized.")
+    return df, model, _feature_cols
 
 
 def get_feature_importances() -> List[Dict[str, Any]]:
     """
-    Return feature importances as list of {feature, importance} dicts.
-    Reads models/feature_importances.csv.
+    Return global feature importances from the RandomForest model.
     """
-    if not os.path.exists(FEATURE_IMPORTANCES_PATH):
-        raise MLNotReadyError(
-            f"Feature importances file not found at {FEATURE_IMPORTANCES_PATH}. "
-            "Run `python -m urban_resilience.train_resilience_model` first."
-        )
+    df, model, feature_cols = _ensure_loaded()
 
-    df = pd.read_csv(FEATURE_IMPORTANCES_PATH)
-    # ensure correct columns
-    if "feature" not in df.columns or "importance" not in df.columns:
-        raise RuntimeError("feature_importances.csv missing required columns.")
+    importances = getattr(model, "feature_importances_", None)
+    if importances is None:
+        # Fallback: equal importance
+        importances = np.ones(len(feature_cols)) / len(feature_cols)
 
-    records = df.to_dict(orient="records")
-    return records
+    items = [
+        {"feature": f, "importance": float(imp)}
+        for f, imp in zip(feature_cols, importances)
+    ]
+    # Sort descending
+    items.sort(key=lambda x: x["importance"], reverse=True)
+    return items
 
 
-def get_city_features(city: str) -> Dict[str, float]:
+def get_city_features(city: str) -> Dict[str, Any]:
     """
-    Compute structural features for a given city, in the same 'feat_*' naming scheme.
+    Return structural features for a given city.
+    We simply take the first row for that city (features are constant across rows).
     """
-    G = load_city_graph(city, cache_dir="graphs")
-    base_feats = compute_city_features(G)  # keys like avg_clustering, modularity, etc.
+    df, model, feature_cols = _ensure_loaded()
+    sub = df[df["city"] == city]
+    if sub.empty:
+        raise ValueError(f"No rows found for city: {city}")
 
-    # convert to feat_* namespace used in training dataset
-    out: Dict[str, float] = {}
-    for name in FEATURE_NAMES:
-        if name.startswith("feat_"):
-            raw_key = name[len("feat_"):]
-            val = base_feats.get(raw_key, 0.0)
-            out[name] = float(val)
-    return out
+    row = sub.iloc[0]
+    features = {f: float(row[f]) for f in feature_cols if f.startswith("feat_")}
+    return {
+        "city": city,
+        "features": features,
+    }
 
 
-def _build_feature_vector_for_prediction(
-    city: str,
-    scenario: str,
-    severity: float,
-) -> np.ndarray:
-    """
-    Build a 1D numpy array of features in the exact order FEATURE_NAMES,
-    for the given (city, scenario, severity).
-    """
-    if not ml_is_ready():
-        raise MLNotReadyError(
-            "ML model not loaded. Train the model and restart the backend."
-        )
+def _pick_row_for_city_scenario_severity(
+    city: str, scenario: str, severity: float
+) -> pd.Series:
+    df, _, _ = _ensure_loaded()
 
-    if scenario not in SCENARIO_NAMES:
+    sub = df[(df["city"] == city) & (df["scenario"] == scenario)]
+    if sub.empty:
         raise ValueError(
-            f"Scenario '{scenario}' not seen during training. "
-            f"Valid: {SCENARIO_NAMES}"
+            f"No rows found for city='{city}' and scenario='{scenario}'."
         )
 
-    # Load city graph + compute base structural features (non-prefixed keys)
-    G = load_city_graph(city, cache_dir="graphs")
-    base_feats = compute_city_features(G)  # e.g., avg_clustering, modularity, ...
-
-    # Now map them into the FEATURE_NAMES vector
-    row: Dict[str, float] = {}
-
-    for fname in FEATURE_NAMES:
-        if fname.startswith("feat_"):
-            raw_key = fname[len("feat_"):]
-            row[fname] = float(base_feats.get(raw_key, 0.0))
-        elif fname == "severity":
-            row[fname] = float(severity)
-        elif fname.startswith("scenario_"):
-            scen_label = fname[len("scenario_"):]
-            row[fname] = 1.0 if scen_label == scenario else 0.0
-        else:
-            # any unexpected column -> set to 0
-            row[fname] = 0.0
-
-    # Build vector in exact order
-    x = np.array([row[fname] for fname in FEATURE_NAMES], dtype=float)
-    return x
+    # severities available in dataset
+    sev_values = sub["severity"].values.astype(float)
+    # pick nearest severity in dataset
+    idx = int(np.argmin(np.abs(sev_values - severity)))
+    row = sub.iloc[idx]
+    return row
 
 
 def predict_resilience_for_city_scenario(
-    city: str,
-    scenario: str,
-    severity: float,
-) -> float:
+    city: str, scenario: str, severity: float
+) -> Dict[str, Any]:
     """
-    Predict a scalar resilience score (higher = more resilient) for a given
-    city + disruption scenario + severity, using the trained RandomForest model.
+    Use the trained RF model to predict resilience for a (city, scenario, severity).
+    Internally we select the nearest severity row from the small dataset and
+    feed its feature vector to the model.
     """
-    if not ml_is_ready():
-        raise MLNotReadyError(
-            "ML model not loaded. Train the model and restart the backend."
-        )
+    df, model, feature_cols = _ensure_loaded()
+    row = _pick_row_for_city_scenario_severity(city, scenario, severity)
 
-    x = _build_feature_vector_for_prediction(city, scenario, severity)
-    pred = float(MODEL.predict(x.reshape(1, -1))[0])
-    return pred
+    X = row[feature_cols].values.astype(float).reshape(1, -1)
+    pred = float(model.predict(X)[0])
+
+    # also return ground-truth label for that nearest severity (for comparison)
+    gt = float(row.get("label_resilience_score", np.nan))
+    used_sev = float(row["severity"])
+
+    return {
+        "city": city,
+        "scenario": scenario,
+        "requested_severity": float(severity),
+        "used_severity": used_sev,
+        "predicted_resilience": pred,
+        "dataset_label": gt,
+    }
+
+
+def predict_resilience_from_features(features: Dict[str, float]) -> float:
+    """
+    Optional helper: predict directly from a dict of feature_name -> value.
+    Only uses columns the model knows.
+    """
+    _, model, feature_cols = _ensure_loaded()
+    x_row = [features.get(f, 0.0) for f in feature_cols]
+    X = np.array(x_row, dtype=float).reshape(1, -1)
+    return float(model.predict(X)[0])
+
+
+def get_all_cities_overview() -> List[Dict[str, Any]]:
+    """
+    Return an overview table: per-city average resilience score in the dataset.
+    """
+    df, _, _ = _ensure_loaded()
+    if "label_resilience_score" not in df.columns:
+        return []
+
+    grouped = (
+        df.groupby("city")["label_resilience_score"]
+        .agg(["mean", "min", "max", "count"])
+        .reset_index()
+    )
+
+    rows: List[Dict[str, Any]] = []
+    for _, r in grouped.iterrows():
+        rows.append(
+            {
+                "city": r["city"],
+                "mean_resilience": float(r["mean"]),
+                "min_resilience": float(r["min"]),
+                "max_resilience": float(r["max"]),
+                "n_samples": int(r["count"]),
+            }
+        )
+    return rows

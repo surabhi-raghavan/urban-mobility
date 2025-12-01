@@ -16,6 +16,8 @@ from urban_resilience.edge_selection import (
     graph_to_edges_gdf,
 )
 from urban_resilience.simulation import simulate_single_shock
+from urban_resilience import ml_routes
+
 
 EdgeId = Tuple[int, int, int]
 
@@ -33,6 +35,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+app.include_router(ml_routes.router)
 
 
 # ---------- Pydantic models ----------
