@@ -42,7 +42,7 @@ function CitySelector({ currentCity, onSelect }) {
 
         setAuto(cleaned);
       } catch (err) {
-        // ignore abort
+        // ignore abort or network errors for now
       } finally {
         setLoading(false);
       }
@@ -59,8 +59,17 @@ function CitySelector({ currentCity, onSelect }) {
   const results =
     matches.length > 0 || auto.length > 0 ? [...matches, ...auto] : [];
 
+  // Handle pressing Enter in the search input
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (results[0]) {
+      onSelect(results[0]);
+      setQuery(results[0].label);
+    }
+  };
+
   return (
-    <div
+    <section
       style={{
         background: "white",
         borderRadius: "1.5rem",
@@ -117,7 +126,7 @@ function CitySelector({ currentCity, onSelect }) {
 
       {/* Search bar */}
       <form
-        onSubmit={handleSearchClick}
+        onSubmit={handleSearchSubmit}
         style={{
           marginTop: "1.25rem",
           display: "flex",
@@ -147,7 +156,6 @@ function CitySelector({ currentCity, onSelect }) {
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
-              setTouched(true);
             }}
             placeholder="e.g., Houston, TX"
             style={{
@@ -163,10 +171,7 @@ function CitySelector({ currentCity, onSelect }) {
         </div>
 
         <button
-          type="button"
-          onClick={() => {
-            if (results[0]) onSelect(results[0]);
-          }}
+          type="submit"
           style={{
             borderRadius: "999px",
             border: "none",
@@ -181,11 +186,11 @@ function CitySelector({ currentCity, onSelect }) {
         >
           Search
         </button>
-      </div>
+      </form>
 
       {/* Search results */}
       {query.trim() && (
-        <div style={{ marginBottom: "0.9rem" }}>
+        <div style={{ marginBottom: "0.9rem", marginTop: "0.9rem" }}>
           <div
             style={{
               fontSize: "0.82rem",
@@ -210,31 +215,32 @@ function CitySelector({ currentCity, onSelect }) {
             </div>
           )}
 
-          {results.map((c) => (
-            <button
-              key={c.label}
-              onClick={() => {
-                onSelect(c);
-                setQuery(c.label);
-              }}
-              style={{
-                display: "block",
-                width: "100%",
-                textAlign: "left",
-                padding: "0.5rem 0.75rem",
-                borderRadius: "0.75rem",
-                border: "1px solid #e5e7eb",
-                background: "#f9fafb",
-                cursor: "pointer",
-                marginBottom: "0.25rem",
-                fontSize: "0.9rem",
-                color: "#111827",
-              }}
-            >
-              <span style={{ marginRight: "0.4rem" }}>📍</span>
-              {c.label}
-            </button>
-          ))}
+          {!loading &&
+            results.map((c) => (
+              <button
+                key={c.label}
+                onClick={() => {
+                  onSelect(c);
+                  setQuery(c.label);
+                }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "0.5rem 0.75rem",
+                  borderRadius: "0.75rem",
+                  border: "1px solid #e5e7eb",
+                  background: "#f9fafb",
+                  cursor: "pointer",
+                  marginBottom: "0.25rem",
+                  fontSize: "0.9rem",
+                  color: "#111827",
+                }}
+              >
+                <span style={{ marginRight: "0.4rem" }}>📍</span>
+                {c.label}
+              </button>
+            ))}
         </div>
       )}
 
@@ -246,6 +252,7 @@ function CitySelector({ currentCity, onSelect }) {
               fontSize: "0.85rem",
               color: "#6b7280",
               marginBottom: 4,
+              marginTop: "0.9rem",
             }}
           >
             Popular Cities:
