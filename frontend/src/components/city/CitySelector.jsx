@@ -1,73 +1,63 @@
 // src/components/city/CitySelector.jsx
 import { useEffect, useMemo, useState } from "react";
-import usCities from "../../data/us_cities.json";
+import { POPULAR_CITIES } from "../../constants/cities";
 
-// Helper to normalize text for matching
-function normalize(str) {
-  return str.toLowerCase().trim();
-}
+function CitySelector({ currentCity, onSelect }) {
+  const [query, setQuery] = useState("");
+  const [auto, setAuto] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-const DEFAULT_PRESET_CITIES = [
-  "Chicago, IL",
-  "Pittsburgh, PA",
-  "Dallas, TX",
-  "Phoenix, AZ",
-  "San Francisco, CA",
-];
+  // 🔍 Local matches from POPULAR_CITIES
+  const matches = useMemo(() => {
+    if (!query.trim()) return [];
+    const q = query.toLowerCase();
+    return POPULAR_CITIES.filter((c) => c.label.toLowerCase().includes(q));
+  }, [query]);
 
-function CitySelector({
-  selectedCity,
-  onCityChange,
-  presetCities = DEFAULT_PRESET_CITIES,
-}) {
-  const [query, setQuery] = useState(selectedCity || "");
-  const [touched, setTouched] = useState(false);
-
-  // Keep input in sync if selectedCity changes from outside
+  // 🌐 Real autocomplete (Nominatim)
   useEffect(() => {
-    if (!touched) {
-      setQuery(selectedCity || "");
+    if (!query.trim()) {
+      setAuto([]);
+      return;
     }
-  }, [selectedCity, touched]);
 
-  // Build full label for each city
-  const cityOptions = useMemo(
-    () =>
-      usCities.map((c) => ({
-        ...c,
-        label: `${c.name}, ${c.state}`,
-      })),
-    []
-  );
+    const controller = new AbortController();
 
-  // Filter cities when user types; only show after 2+ chars
-  const filteredResults = useMemo(() => {
-    const q = normalize(query);
-    if (q.length < 2) return [];
-    return cityOptions
-      .filter((c) => normalize(c.label).includes(q))
-      .slice(0, 8);
-  }, [query, cityOptions]);
+    async function searchCities() {
+      setLoading(true);
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=us&limit=5&city=${encodeURIComponent(
+          query
+        )}`;
 
-  const hasResults = filteredResults.length > 0;
+        const res = await fetch(url, { signal: controller.signal });
+        const data = await res.json();
 
-  const handleSelect = (label) => {
-    setQuery(label);
-    setTouched(true);
-    if (onCityChange) {
-      onCityChange(label);
+        const cleaned = data
+          .filter((d) => d.display_name)
+          .map((d) => ({
+            label: d.display_name,
+            query: d.display_name,
+          }));
+
+        setAuto(cleaned);
+      } catch (err) {
+        // ignore abort
+      } finally {
+        setLoading(false);
+      }
     }
-  };
 
-  const handleSearchClick = (e) => {
-    e.preventDefault();
-    const trimmed = query.trim();
-    if (!trimmed) return;
-    setTouched(true);
-    if (onCityChange) {
-      onCityChange(trimmed);
-    }
-  };
+    const t = setTimeout(searchCities, 250);
+    return () => {
+      controller.abort();
+      clearTimeout(t);
+    };
+  }, [query]);
+
+  // 👉 Unified result list (popular matches first, then autocomplete)
+  const results =
+    matches.length > 0 || auto.length > 0 ? [...matches, ...auto] : [];
 
   return (
     <div
@@ -80,7 +70,14 @@ function CitySelector({
       }}
     >
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          marginBottom: "1rem",
+          gap: "0.6rem",
+        }}
+      >
         <div
           style={{
             width: 32,
@@ -164,8 +161,12 @@ function CitySelector({
             }}
           />
         </div>
+
         <button
-          type="submit"
+          type="button"
+          onClick={() => {
+            if (results[0]) onSelect(results[0]);
+          }}
           style={{
             borderRadius: "999px",
             border: "none",
@@ -180,112 +181,130 @@ function CitySelector({
         >
           Search
         </button>
-      </form>
+      </div>
 
       {/* Search results */}
-      <div style={{ marginTop: "1rem", fontSize: "0.9rem" }}>
-        <div
-          style={{
-            fontWeight: 500,
-            marginBottom: "0.25rem",
-            color: "#6b7280",
-          }}
-        >
-          Search Results:
+      {query.trim() && (
+        <div style={{ marginBottom: "0.9rem" }}>
+          <div
+            style={{
+              fontSize: "0.82rem",
+              color: "#6b7280",
+              marginBottom: "0.25rem",
+            }}
+          >
+            Search Results:
+          </div>
+
+          {loading && (
+            <div style={{ fontSize: "0.85rem", color: "#9ca3af" }}>
+              Searching…
+            </div>
+          )}
+
+          {!loading && results.length === 0 && (
+            <div style={{ fontSize: "0.85rem", color: "#9ca3af" }}>
+              No matches found. Try a full city name like:
+              <br />
+              <em>"Denver, Colorado"</em> or <em>"New York City"</em>.
+            </div>
+          )}
+
+          {results.map((c) => (
+            <button
+              key={c.label}
+              onClick={() => {
+                onSelect(c);
+                setQuery(c.label);
+              }}
+              style={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                padding: "0.5rem 0.75rem",
+                borderRadius: "0.75rem",
+                border: "1px solid #e5e7eb",
+                background: "#f9fafb",
+                cursor: "pointer",
+                marginBottom: "0.25rem",
+                fontSize: "0.9rem",
+                color: "#111827",
+              }}
+            >
+              <span style={{ marginRight: "0.4rem" }}>📍</span>
+              {c.label}
+            </button>
+          ))}
         </div>
-        {hasResults ? (
+      )}
+
+      {/* Popular cities */}
+      {!query.trim() && (
+        <>
+          <div
+            style={{
+              fontSize: "0.85rem",
+              color: "#6b7280",
+              marginBottom: 4,
+            }}
+          >
+            Popular Cities:
+          </div>
+
           <div
             style={{
               display: "flex",
               flexWrap: "wrap",
               gap: "0.5rem",
-              marginTop: "0.25rem",
+              marginBottom: currentCity ? "0.9rem" : 0,
             }}
           >
-            {filteredResults.map((c) => (
+            {POPULAR_CITIES.map((c) => (
               <button
                 key={c.label}
-                type="button"
-                onClick={() => handleSelect(c.label)}
+                onClick={() => {
+                  onSelect(c);
+                  setQuery(c.label);
+                }}
                 style={{
                   borderRadius: "999px",
-                  border: "1px solid #e5e7eb",
+                  padding: "0.4rem 0.9rem",
+                  border:
+                    currentCity?.label === c.label
+                      ? "1px solid #4f46e5"
+                      : "1px solid #e5e7eb",
                   background:
-                    normalize(selectedCity || "") === normalize(c.label)
-                      ? "#eef2ff"
-                      : "white",
-                  padding: "0.3rem 0.8rem",
-                  fontSize: "0.88rem",
+                    currentCity?.label === c.label ? "#eef2ff" : "#ffffff",
                   cursor: "pointer",
+                  fontSize: "0.9rem",
+                  color: "#111827",
                 }}
               >
                 {c.label}
               </button>
             ))}
           </div>
-        ) : query.trim().length >= 2 ? (
-          <div
-            style={{
-              color: "#9ca3af",
-              marginTop: "0.15rem",
-            }}
-          >
-            No matching cities in the local list. You can still run a
-            simulation using the typed city name.
-          </div>
-        ) : (
-          <div
-            style={{
-              color: "#9ca3af",
-              marginTop: "0.15rem",
-            }}
-          >
-            Start typing a city name to see matches.
-          </div>
-        )}
-      </div>
+        </>
+      )}
 
-      {/* Popular preset cities */}
-      <div style={{ marginTop: "1.25rem", fontSize: "0.9rem" }}>
+      {/* Current banner */}
+      {currentCity && (
         <div
           style={{
-            fontWeight: 500,
-            marginBottom: "0.35rem",
-            color: "#6b7280",
+            marginTop: "0.25rem",
+            padding: "0.75rem 1rem",
+            borderRadius: "0.9rem",
+            background:
+              "linear-gradient(135deg, rgba(129,140,248,0.12), rgba(196,181,253,0.12))",
+            border: "1px solid rgba(129,140,248,0.35)",
+            fontSize: "0.9rem",
           }}
         >
-          Popular Cities:
+          <span style={{ color: "#4f46e5", marginRight: 6 }}>●</span>
+          <strong>Currently analyzing:</strong> {currentCity.label}
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "0.5rem",
-          }}
-        >
-          {presetCities.map((city) => (
-            <button
-              key={city}
-              type="button"
-              onClick={() => handleSelect(city)}
-              style={{
-                borderRadius: "999px",
-                border: "1px solid #e5e7eb",
-                background:
-                  normalize(selectedCity || "") === normalize(city)
-                    ? "#eef2ff"
-                    : "white",
-                padding: "0.3rem 0.9rem",
-                fontSize: "0.9rem",
-                cursor: "pointer",
-              }}
-            >
-              {city}
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
+      )}
+    </section>
   );
 }
 

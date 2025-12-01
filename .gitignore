@@ -227,3 +227,4 @@ backend/graphs/Boston.graphml
 backend/graphs/Chicago_Illinois.graphml
 backend/graphs/Pittsburgh.graphml
 backend/graphs/Pittsburgh_Pennsylvania.graphml
+*.json
