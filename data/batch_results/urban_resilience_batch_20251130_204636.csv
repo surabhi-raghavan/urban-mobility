@@ -1,0 +1,376 @@
+city,scenario,severity,run,avg_ratio,median_ratio,pct_disconnected,n_removed_edges,n_pairs
+"Chicago, Illinois, USA",Bridge Collapse,0.3,0,1.0578617701009139,1.0622879198401238,0.0,257,30
+"Chicago, Illinois, USA",Bridge Collapse,0.3,1,1.0915872882159952,1.0634231421716902,0.0,257,30
+"Chicago, Illinois, USA",Bridge Collapse,0.3,2,1.0654856443056524,1.0443685861006027,0.0,257,30
+"Chicago, Illinois, USA",Bridge Collapse,0.3,3,1.0881445586561824,1.0248785781527525,0.0,257,30
+"Chicago, Illinois, USA",Bridge Collapse,0.3,4,1.1181748947367331,1.1111861371011114,0.0,257,30
+"Chicago, Illinois, USA",Bridge Collapse,0.5,0,1.1403552891608038,1.1277008756572846,0.0,429,30
+"Chicago, Illinois, USA",Bridge Collapse,0.5,1,1.1297390425366092,1.1324451178614372,0.0,429,30
+"Chicago, Illinois, USA",Bridge Collapse,0.5,2,1.112088081211317,1.1037263924310083,0.0,429,30
+"Chicago, Illinois, USA",Bridge Collapse,0.5,3,1.1367599406862916,1.0541306242490274,0.0,429,30
+"Chicago, Illinois, USA",Bridge Collapse,0.5,4,1.185492369382629,1.206415893546106,0.0,429,30
+"Chicago, Illinois, USA",Bridge Collapse,0.7,0,1.2329427282266356,1.2352444768514474,0.0,601,30
+"Chicago, Illinois, USA",Bridge Collapse,0.7,1,1.2321016564696035,1.2637728791489111,0.0,601,30
+"Chicago, Illinois, USA",Bridge Collapse,0.7,2,1.1869635062055592,1.1748834589423058,0.0,601,30
+"Chicago, Illinois, USA",Bridge Collapse,0.7,3,1.188512218062353,1.1391550360801936,0.0,601,30
+"Chicago, Illinois, USA",Bridge Collapse,0.7,4,1.2720746805737406,1.2758772399639793,0.0,601,30
+"Chicago, Illinois, USA",Tunnel Closure,0.3,0,1.0117965172815246,1.0,0.0,167,30
+"Chicago, Illinois, USA",Tunnel Closure,0.3,1,1.0016069940467267,1.0,0.0,167,30
+"Chicago, Illinois, USA",Tunnel Closure,0.3,2,1.0071767644932814,1.0,0.0,167,30
+"Chicago, Illinois, USA",Tunnel Closure,0.3,3,1.0066380418787915,1.0,0.0,167,30
+"Chicago, Illinois, USA",Tunnel Closure,0.3,4,1.0204009975411628,1.0,0.0,167,30
+"Chicago, Illinois, USA",Tunnel Closure,0.5,0,1.0294430612429784,1.0,0.0,278,30
+"Chicago, Illinois, USA",Tunnel Closure,0.5,1,1.0033852298090589,1.0,0.0,278,30
+"Chicago, Illinois, USA",Tunnel Closure,0.5,2,1.0094935039404747,1.0,0.0,278,30
+"Chicago, Illinois, USA",Tunnel Closure,0.5,3,1.0145650091170562,1.0,0.0,278,30
+"Chicago, Illinois, USA",Tunnel Closure,0.5,4,1.024591450940281,1.0056525369775606,0.0,278,30
+"Chicago, Illinois, USA",Tunnel Closure,0.7,0,1.036186645731585,1.0009850932496263,0.0,389,30
+"Chicago, Illinois, USA",Tunnel Closure,0.7,1,1.01337866923752,1.0,0.0,389,30
+"Chicago, Illinois, USA",Tunnel Closure,0.7,2,1.0211149105774002,1.0,0.0,389,30
+"Chicago, Illinois, USA",Tunnel Closure,0.7,3,1.0254689772944894,1.0,0.0,389,30
+"Chicago, Illinois, USA",Tunnel Closure,0.7,4,1.031670008030527,1.0234942343719147,0.0,389,30
+"Chicago, Illinois, USA",Highway Flood,0.3,0,1.3792843312890741,1.2655359032369862,3.3333333333333335,1028,30
+"Chicago, Illinois, USA",Highway Flood,0.3,1,1.354584511606221,1.2169973651837018,3.3333333333333335,1028,30
+"Chicago, Illinois, USA",Highway Flood,0.3,2,1.2599272568865019,1.138997390156561,0.0,1028,30
+"Chicago, Illinois, USA",Highway Flood,0.3,3,1.4563525712203749,1.1504178613806078,6.666666666666667,1028,30
+"Chicago, Illinois, USA",Highway Flood,0.3,4,1.2379602908647747,1.2056200220619644,0.0,1028,30
+"Chicago, Illinois, USA",Highway Flood,0.5,0,1.4468568048965273,1.372427471786896,3.3333333333333335,1714,30
+"Chicago, Illinois, USA",Highway Flood,0.5,1,1.3993032104161225,1.2461434356711494,3.3333333333333335,1714,30
+"Chicago, Illinois, USA",Highway Flood,0.5,2,1.297607756830629,1.196693984259391,0.0,1714,30
+"Chicago, Illinois, USA",Highway Flood,0.5,3,1.6341398504787574,1.247055201965357,10.0,1714,30
+"Chicago, Illinois, USA",Highway Flood,0.5,4,1.2925659991468692,1.2855724603027134,0.0,1714,30
+"Chicago, Illinois, USA",Highway Flood,0.7,0,1.4571661976615546,1.3739250844263475,3.3333333333333335,2399,30
+"Chicago, Illinois, USA",Highway Flood,0.7,1,1.419520748136353,1.2461434356711494,3.3333333333333335,2399,30
+"Chicago, Illinois, USA",Highway Flood,0.7,2,1.2998618576665304,1.196693984259391,0.0,2399,30
+"Chicago, Illinois, USA",Highway Flood,0.7,3,1.6425396971690882,1.271098174797153,10.0,2399,30
+"Chicago, Illinois, USA",Highway Flood,0.7,4,1.3014149221189029,1.288792242990123,0.0,2399,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.3,0,4.890379414390124,5.0,96.66666666666667,22671,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.3,1,4.757511594953263,5.0,93.33333333333333,22671,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.3,2,5.0,5.0,100.0,22671,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.3,3,4.661139958039664,5.0,90.0,22671,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.3,4,4.6583281928865885,5.0,90.0,22671,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.5,0,5.0,5.0,100.0,37962,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.5,1,5.0,5.0,100.0,37962,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.5,2,5.0,5.0,100.0,37962,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.5,3,4.882085744942263,5.0,96.66666666666667,37962,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.5,4,5.0,5.0,100.0,37962,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.7,0,5.0,5.0,100.0,53270,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.7,1,5.0,5.0,100.0,53270,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.7,2,5.0,5.0,100.0,53270,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.7,3,5.0,5.0,100.0,53270,30
+"Chicago, Illinois, USA",Targeted Attack (Top k%),0.7,4,5.0,5.0,100.0,53270,30
+"Chicago, Illinois, USA",Random Failure,0.3,0,4.72645554134514,5.0,80.0,23142,30
+"Chicago, Illinois, USA",Random Failure,0.3,1,4.4052480540773065,5.0,70.0,23142,30
+"Chicago, Illinois, USA",Random Failure,0.3,2,4.5747342821147,5.0,80.0,23142,30
+"Chicago, Illinois, USA",Random Failure,0.3,3,4.280112919192874,5.0,66.66666666666667,23142,30
+"Chicago, Illinois, USA",Random Failure,0.3,4,4.539144592274634,5.0,80.0,23142,30
+"Chicago, Illinois, USA",Random Failure,0.5,0,5.0,5.0,100.0,38571,30
+"Chicago, Illinois, USA",Random Failure,0.5,1,5.0,5.0,100.0,38571,30
+"Chicago, Illinois, USA",Random Failure,0.5,2,5.0,5.0,100.0,38571,30
+"Chicago, Illinois, USA",Random Failure,0.5,3,5.0,5.0,100.0,38571,30
+"Chicago, Illinois, USA",Random Failure,0.5,4,5.0,5.0,100.0,38571,30
+"Chicago, Illinois, USA",Random Failure,0.7,0,5.0,5.0,100.0,53999,30
+"Chicago, Illinois, USA",Random Failure,0.7,1,5.0,5.0,100.0,53999,30
+"Chicago, Illinois, USA",Random Failure,0.7,2,5.0,5.0,100.0,53999,30
+"Chicago, Illinois, USA",Random Failure,0.7,3,5.0,5.0,100.0,53999,30
+"Chicago, Illinois, USA",Random Failure,0.7,4,5.0,5.0,100.0,53999,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.3,0,1.2950843700584946,1.1126669301614283,3.3333333333333335,137,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.3,1,1.053364039108635,1.012238318688442,0.0,137,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.3,2,1.0883922779058515,1.0541763110718478,0.0,137,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.3,3,1.0833428174230184,1.0641966567209706,0.0,137,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.3,4,1.1738090876993306,1.082623977643375,0.0,137,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.5,0,1.3592708064561316,1.167077298734644,3.3333333333333335,228,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.5,1,1.1705927886544023,1.072859255440334,0.0,228,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.5,2,1.155044156318043,1.123143341114906,0.0,228,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.5,3,1.210402565940598,1.142662546475698,0.0,228,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.5,4,1.643061846409818,1.1689366819056988,10.0,228,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.7,0,2.0946957108266333,1.2840272535284352,16.666666666666668,319,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.7,1,2.388117582496146,1.2110717418265482,30.0,319,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.7,2,2.417989303118332,1.3355898823421444,30.0,319,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.7,3,3.421458767378098,5.0,60.0,319,30
+"Pittsburgh, Pennsylvania, USA",Bridge Collapse,0.7,4,2.754025537878245,1.4379353504610959,40.0,319,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.3,0,1.0169798950182807,1.0,0.0,15,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.3,1,1.0363594085375747,1.0,0.0,15,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.3,2,1.0108463067345668,1.0,0.0,15,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.3,3,1.0072241643481301,1.0,0.0,15,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.3,4,1.0123316405264642,1.0,0.0,15,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.5,0,1.02096967883037,1.0,0.0,26,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.5,1,1.0393741129791207,1.0,0.0,26,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.5,2,1.0133310361170316,1.0,0.0,26,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.5,3,1.0109088001444966,1.0,0.0,26,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.5,4,1.0123316405264642,1.0,0.0,26,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.7,0,1.0446435086502788,1.0,0.0,37,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.7,1,1.0398679114685525,1.0,0.0,37,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.7,2,1.0207233814414527,1.0,0.0,37,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.7,3,1.055498833165309,1.0,0.0,37,30
+"Pittsburgh, Pennsylvania, USA",Tunnel Closure,0.7,4,1.0155236723795442,1.0,0.0,37,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.3,0,1.6927655585466435,1.1937793293877408,13.333333333333334,611,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.3,1,1.615436932577403,1.1604740796497621,10.0,611,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.3,2,1.8477974388117964,1.1966093434631389,16.666666666666668,611,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.3,3,1.8240927918508247,1.318079746749266,13.333333333333334,611,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.3,4,1.9104838586401791,1.3004623736143044,16.666666666666668,611,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.5,0,2.123910961003941,1.3836738586084816,20.0,1018,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.5,1,1.912146542194605,1.2814168615388422,16.666666666666668,1018,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.5,2,1.900324165337455,1.2229413732701127,16.666666666666668,1018,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.5,3,1.9494587669628716,1.5083699227426686,13.333333333333334,1018,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.5,4,2.087117486523414,1.3866032029588047,20.0,1018,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.7,0,2.349171232459971,1.545379895929948,23.333333333333332,1425,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.7,1,2.075889525776089,1.2959026019897637,20.0,1425,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.7,2,2.0046760742501366,1.3319419373737014,16.666666666666668,1425,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.7,3,2.1569573399032307,1.5298224514699965,20.0,1425,30
+"Pittsburgh, Pennsylvania, USA",Highway Flood,0.7,4,2.2835540618050385,1.5220267710874675,23.333333333333332,1425,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.3,0,5.0,5.0,100.0,6959,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.3,1,5.0,5.0,100.0,6959,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.3,2,5.0,5.0,100.0,6959,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.3,3,5.0,5.0,100.0,6959,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.3,4,5.0,5.0,100.0,6959,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.5,0,5.0,5.0,100.0,11715,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.5,1,5.0,5.0,100.0,11715,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.5,2,5.0,5.0,100.0,11715,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.5,3,5.0,5.0,100.0,11715,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.5,4,5.0,5.0,100.0,11715,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.7,0,5.0,5.0,100.0,16424,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.7,1,5.0,5.0,100.0,16424,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.7,2,5.0,5.0,100.0,16424,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.7,3,5.0,5.0,100.0,16424,30
+"Pittsburgh, Pennsylvania, USA",Targeted Attack (Top k%),0.7,4,5.0,5.0,100.0,16424,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.3,0,4.960771298747336,5.0,93.33333333333333,7118,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.3,1,4.8799439269657565,5.0,96.66666666666667,7118,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.3,2,5.0,5.0,100.0,7118,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.3,3,4.873882282878038,5.0,96.66666666666667,7118,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.3,4,4.9123876244043005,5.0,96.66666666666667,7118,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.5,0,5.0,5.0,100.0,11863,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.5,1,5.0,5.0,100.0,11863,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.5,2,5.0,5.0,100.0,11863,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.5,3,5.0,5.0,100.0,11863,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.5,4,5.0,5.0,100.0,11863,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.7,0,5.0,5.0,100.0,16608,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.7,1,5.0,5.0,100.0,16608,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.7,2,5.0,5.0,100.0,16608,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.7,3,5.0,5.0,100.0,16608,30
+"Pittsburgh, Pennsylvania, USA",Random Failure,0.7,4,5.0,5.0,100.0,16608,30
+"Dallas, Texas, USA",Bridge Collapse,0.3,0,1.1660327178226308,1.1631851420319732,0.0,502,30
+"Dallas, Texas, USA",Bridge Collapse,0.3,1,1.1696880998481807,1.1342491259710727,0.0,502,30
+"Dallas, Texas, USA",Bridge Collapse,0.3,2,1.1328989419550524,1.0942152952267483,0.0,502,30
+"Dallas, Texas, USA",Bridge Collapse,0.3,3,1.3300649006807395,1.1887190868985784,3.3333333333333335,502,30
+"Dallas, Texas, USA",Bridge Collapse,0.3,4,1.1329106521323131,1.1433632236609603,0.0,502,30
+"Dallas, Texas, USA",Bridge Collapse,0.5,0,1.3111705558367466,1.2728745082423363,0.0,837,30
+"Dallas, Texas, USA",Bridge Collapse,0.5,1,1.2654950534564984,1.2429676582449822,0.0,837,30
+"Dallas, Texas, USA",Bridge Collapse,0.5,2,1.4728677974712967,1.1905427422486299,6.666666666666667,837,30
+"Dallas, Texas, USA",Bridge Collapse,0.5,3,1.4225841707522655,1.2661546080484367,3.3333333333333335,837,30
+"Dallas, Texas, USA",Bridge Collapse,0.5,4,1.3489899638636944,1.2069398909644873,3.3333333333333335,837,30
+"Dallas, Texas, USA",Bridge Collapse,0.7,0,1.5438584073064205,1.4272253729082687,3.3333333333333335,1172,30
+"Dallas, Texas, USA",Bridge Collapse,0.7,1,1.8653392275388156,1.4919703370230362,10.0,1172,30
+"Dallas, Texas, USA",Bridge Collapse,0.7,2,1.603091649833881,1.2916384711251996,6.666666666666667,1172,30
+"Dallas, Texas, USA",Bridge Collapse,0.7,3,1.7211984936945781,1.409879547209215,6.666666666666667,1172,30
+"Dallas, Texas, USA",Bridge Collapse,0.7,4,1.4535153026729903,1.3006092339806512,3.3333333333333335,1172,30
+"Dallas, Texas, USA",Tunnel Closure,0.3,0,1.0048945472450361,1.0,0.0,20,30
+"Dallas, Texas, USA",Tunnel Closure,0.3,1,1.003741092796009,1.0,0.0,20,30
+"Dallas, Texas, USA",Tunnel Closure,0.3,2,1.0033608351968761,1.0,0.0,20,30
+"Dallas, Texas, USA",Tunnel Closure,0.3,3,1.0044168112360101,1.0,0.0,20,30
+"Dallas, Texas, USA",Tunnel Closure,0.3,4,1.0006068911428165,1.0,0.0,20,30
+"Dallas, Texas, USA",Tunnel Closure,0.5,0,1.0176247444340814,1.0,0.0,33,30
+"Dallas, Texas, USA",Tunnel Closure,0.5,1,1.003741092796009,1.0,0.0,33,30
+"Dallas, Texas, USA",Tunnel Closure,0.5,2,1.0149297345613624,1.0,0.0,33,30
+"Dallas, Texas, USA",Tunnel Closure,0.5,3,1.0057119439026179,1.0,0.0,33,30
+"Dallas, Texas, USA",Tunnel Closure,0.5,4,1.005192607875009,1.0,0.0,33,30
+"Dallas, Texas, USA",Tunnel Closure,0.7,0,1.0186422544458835,1.0,0.0,46,30
+"Dallas, Texas, USA",Tunnel Closure,0.7,1,1.0133217093966729,1.0,0.0,46,30
+"Dallas, Texas, USA",Tunnel Closure,0.7,2,1.0159509290038047,1.0,0.0,46,30
+"Dallas, Texas, USA",Tunnel Closure,0.7,3,1.0092583787451204,1.0,0.0,46,30
+"Dallas, Texas, USA",Tunnel Closure,0.7,4,1.1396153695393396,1.0,3.3333333333333335,46,30
+"Dallas, Texas, USA",Highway Flood,0.3,0,1.2284485711578124,1.1972576622735744,0.0,1471,30
+"Dallas, Texas, USA",Highway Flood,0.3,1,1.5169722537986492,1.2362613047316695,6.666666666666667,1471,30
+"Dallas, Texas, USA",Highway Flood,0.3,2,1.23804809492905,1.2152258773062081,0.0,1471,30
+"Dallas, Texas, USA",Highway Flood,0.3,3,1.4380623494319538,1.3084200813146922,3.3333333333333335,1471,30
+"Dallas, Texas, USA",Highway Flood,0.3,4,1.3559468585333991,1.2080308464515923,3.3333333333333335,1471,30
+"Dallas, Texas, USA",Highway Flood,0.5,0,1.288044804999192,1.2554162845902828,0.0,2453,30
+"Dallas, Texas, USA",Highway Flood,0.5,1,1.6240084247235282,1.3860614184649802,6.666666666666667,2453,30
+"Dallas, Texas, USA",Highway Flood,0.5,2,1.2813414249598973,1.2583810577940944,0.0,2453,30
+"Dallas, Texas, USA",Highway Flood,0.5,3,1.8266038247998189,1.384304823053856,13.333333333333334,2453,30
+"Dallas, Texas, USA",Highway Flood,0.5,4,1.3880727130038994,1.2462270259909907,3.3333333333333335,2453,30
+"Dallas, Texas, USA",Highway Flood,0.7,0,1.5505099595134382,1.2892954579373312,6.666666666666667,3434,30
+"Dallas, Texas, USA",Highway Flood,0.7,1,1.8852876251596211,1.4141865600665156,13.333333333333334,3434,30
+"Dallas, Texas, USA",Highway Flood,0.7,2,1.2969184722345906,1.2665313497788546,0.0,3434,30
+"Dallas, Texas, USA",Highway Flood,0.7,3,1.9759580404703179,1.4183745880928647,16.666666666666668,3434,30
+"Dallas, Texas, USA",Highway Flood,0.7,4,1.5043180433649483,1.2614217878130494,6.666666666666667,3434,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.3,0,5.0,5.0,100.0,25914,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.3,1,5.0,5.0,100.0,25914,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.3,2,5.0,5.0,100.0,25914,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.3,3,5.0,5.0,100.0,25914,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.3,4,5.0,5.0,100.0,25914,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.5,0,5.0,5.0,100.0,44510,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.5,1,5.0,5.0,100.0,44510,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.5,2,5.0,5.0,100.0,44510,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.5,3,5.0,5.0,100.0,44510,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.5,4,5.0,5.0,100.0,44510,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.7,0,5.0,5.0,100.0,63400,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.7,1,5.0,5.0,100.0,63400,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.7,2,5.0,5.0,100.0,63400,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.7,3,5.0,5.0,100.0,63400,30
+"Dallas, Texas, USA",Targeted Attack (Top k%),0.7,4,5.0,5.0,100.0,63400,30
+"Dallas, Texas, USA",Random Failure,0.3,0,4.891237075554012,5.0,96.66666666666667,27945,30
+"Dallas, Texas, USA",Random Failure,0.3,1,4.89590018149452,5.0,96.66666666666667,27945,30
+"Dallas, Texas, USA",Random Failure,0.3,2,5.0,5.0,100.0,27945,30
+"Dallas, Texas, USA",Random Failure,0.3,3,4.9018490976853,5.0,96.66666666666667,27945,30
+"Dallas, Texas, USA",Random Failure,0.3,4,5.0,5.0,100.0,27945,30
+"Dallas, Texas, USA",Random Failure,0.5,0,5.0,5.0,100.0,46575,30
+"Dallas, Texas, USA",Random Failure,0.5,1,5.0,5.0,100.0,46575,30
+"Dallas, Texas, USA",Random Failure,0.5,2,5.0,5.0,100.0,46575,30
+"Dallas, Texas, USA",Random Failure,0.5,3,5.0,5.0,100.0,46575,30
+"Dallas, Texas, USA",Random Failure,0.5,4,5.0,5.0,100.0,46575,30
+"Dallas, Texas, USA",Random Failure,0.7,0,5.0,5.0,100.0,65204,30
+"Dallas, Texas, USA",Random Failure,0.7,1,5.0,5.0,100.0,65204,30
+"Dallas, Texas, USA",Random Failure,0.7,2,5.0,5.0,100.0,65204,30
+"Dallas, Texas, USA",Random Failure,0.7,3,5.0,5.0,100.0,65204,30
+"Dallas, Texas, USA",Random Failure,0.7,4,5.0,5.0,100.0,65204,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.3,0,1.1085830723716492,1.1078979633788935,0.0,469,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.3,1,1.5838720825868036,1.0422311260443309,13.333333333333334,469,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.3,2,1.2174361782330023,1.078076215066227,3.3333333333333335,469,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.3,3,1.068050170210364,1.058171907509395,0.0,469,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.3,4,1.2082163944155004,1.0754030354416333,3.3333333333333335,469,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.5,0,1.8226712008561037,1.2299809251567453,16.666666666666668,783,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.5,1,1.6572722526659673,1.1396224814064775,13.333333333333334,783,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.5,2,1.5359058381283859,1.170564113928595,10.0,783,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.5,3,1.6342562841916086,1.1236376477452654,13.333333333333334,783,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.5,4,1.404233351649295,1.1393678842224717,6.666666666666667,783,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.7,0,2.0452692004664192,1.3956124139528376,20.0,1096,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.7,1,1.7897420169528517,1.266322725963433,13.333333333333334,1096,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.7,2,2.1766318592831286,1.3464189048253914,23.333333333333332,1096,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.7,3,2.496223349485077,1.2303175196381715,33.333333333333336,1096,30
+"Phoenix, Arizona, USA",Bridge Collapse,0.7,4,1.694291235409195,1.1962976382767798,13.333333333333334,1096,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.3,0,1.000557532802826,1.0,0.0,9,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.3,1,1.0021097953139646,1.0,0.0,9,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.3,2,1.0118157959226606,1.0,0.0,9,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.3,3,1.0011541057068927,1.0,0.0,9,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.3,4,1.0022723646999672,1.0,0.0,9,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.5,0,1.0023037440380653,1.0,0.0,15,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.5,1,1.0021097953139646,1.0,0.0,15,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.5,2,1.0118157959226606,1.0,0.0,15,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.5,3,1.0062553587245089,1.0,0.0,15,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.5,4,1.0047535114894555,1.0,0.0,15,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.7,0,1.0023037440380653,1.0,0.0,21,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.7,1,1.0021097953139646,1.0,0.0,21,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.7,2,1.0118157959226606,1.0,0.0,21,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.7,3,1.0062553587245089,1.0,0.0,21,30
+"Phoenix, Arizona, USA",Tunnel Closure,0.7,4,1.0047535114894555,1.0,0.0,21,30
+"Phoenix, Arizona, USA",Highway Flood,0.3,0,1.2564534627954274,1.2066518226268312,0.0,1739,30
+"Phoenix, Arizona, USA",Highway Flood,0.3,1,1.437580602929292,1.2775720220197395,3.3333333333333335,1739,30
+"Phoenix, Arizona, USA",Highway Flood,0.3,2,1.2851573946399373,1.2397439245431086,0.0,1739,30
+"Phoenix, Arizona, USA",Highway Flood,0.3,3,1.2670339724866544,1.1797409085770827,0.0,1739,30
+"Phoenix, Arizona, USA",Highway Flood,0.3,4,1.3365353016810593,1.1936105243096355,3.3333333333333335,1739,30
+"Phoenix, Arizona, USA",Highway Flood,0.5,0,1.3232146094342607,1.2626397369709421,0.0,2898,30
+"Phoenix, Arizona, USA",Highway Flood,0.5,1,1.8892595052763284,1.503454732783486,10.0,2898,30
+"Phoenix, Arizona, USA",Highway Flood,0.5,2,1.3559809964344964,1.2965491426560227,0.0,2898,30
+"Phoenix, Arizona, USA",Highway Flood,0.5,3,1.68008159079828,1.215003553035325,10.0,2898,30
+"Phoenix, Arizona, USA",Highway Flood,0.5,4,1.5694834113628695,1.2907820763330418,6.666666666666667,2898,30
+"Phoenix, Arizona, USA",Highway Flood,0.7,0,1.3433455315744842,1.2844828770643453,0.0,4057,30
+"Phoenix, Arizona, USA",Highway Flood,0.7,1,2.031905916626027,1.5839651982465137,13.333333333333334,4057,30
+"Phoenix, Arizona, USA",Highway Flood,0.7,2,1.477418405054556,1.3001970912478291,3.3333333333333335,4057,30
+"Phoenix, Arizona, USA",Highway Flood,0.7,3,1.9405594264817074,1.2492228039099222,16.666666666666668,4057,30
+"Phoenix, Arizona, USA",Highway Flood,0.7,4,1.588675949835875,1.2993308640954204,6.666666666666667,4057,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.3,0,5.0,5.0,100.0,35475,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.3,1,5.0,5.0,100.0,35475,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.3,2,5.0,5.0,100.0,35475,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.3,3,5.0,5.0,100.0,35475,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.3,4,5.0,5.0,100.0,35475,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.5,0,5.0,5.0,100.0,60734,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.5,1,5.0,5.0,100.0,60734,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.5,2,5.0,5.0,100.0,60734,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.5,3,5.0,5.0,100.0,60734,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.5,4,5.0,5.0,100.0,60734,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.7,0,5.0,5.0,100.0,86339,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.7,1,5.0,5.0,100.0,86339,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.7,2,5.0,5.0,100.0,86339,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.7,3,5.0,5.0,100.0,86339,30
+"Phoenix, Arizona, USA",Targeted Attack (Top k%),0.7,4,5.0,5.0,100.0,86339,30
+"Phoenix, Arizona, USA",Random Failure,0.3,0,5.0,5.0,100.0,37200,30
+"Phoenix, Arizona, USA",Random Failure,0.3,1,4.871171304084678,5.0,96.66666666666667,37200,30
+"Phoenix, Arizona, USA",Random Failure,0.3,2,5.0,5.0,100.0,37200,30
+"Phoenix, Arizona, USA",Random Failure,0.3,3,4.899795006664201,5.0,96.66666666666667,37200,30
+"Phoenix, Arizona, USA",Random Failure,0.3,4,5.0,5.0,100.0,37200,30
+"Phoenix, Arizona, USA",Random Failure,0.5,0,5.0,5.0,100.0,62000,30
+"Phoenix, Arizona, USA",Random Failure,0.5,1,5.0,5.0,100.0,62000,30
+"Phoenix, Arizona, USA",Random Failure,0.5,2,5.0,5.0,100.0,62000,30
+"Phoenix, Arizona, USA",Random Failure,0.5,3,5.0,5.0,100.0,62000,30
+"Phoenix, Arizona, USA",Random Failure,0.5,4,5.0,5.0,100.0,62000,30
+"Phoenix, Arizona, USA",Random Failure,0.7,0,5.0,5.0,100.0,86800,30
+"Phoenix, Arizona, USA",Random Failure,0.7,1,5.0,5.0,100.0,86800,30
+"Phoenix, Arizona, USA",Random Failure,0.7,2,5.0,5.0,100.0,86800,30
+"Phoenix, Arizona, USA",Random Failure,0.7,3,5.0,5.0,100.0,86800,30
+"Phoenix, Arizona, USA",Random Failure,0.7,4,5.0,5.0,100.0,86800,30
+"San Francisco, California, USA",Bridge Collapse,0.3,0,1.3204026470725565,1.005927284973577,6.666666666666667,73,30
+"San Francisco, California, USA",Bridge Collapse,0.3,1,1.0392737995762649,1.0014764235032185,0.0,73,30
+"San Francisco, California, USA",Bridge Collapse,0.3,2,1.0891250221933073,1.0469263299760279,0.0,73,30
+"San Francisco, California, USA",Bridge Collapse,0.3,3,1.0562978212725591,1.0,0.0,73,30
+"San Francisco, California, USA",Bridge Collapse,0.3,4,1.0893676982974045,1.0,0.0,73,30
+"San Francisco, California, USA",Bridge Collapse,0.5,0,1.8929667474098815,1.0816327245533635,20.0,122,30
+"San Francisco, California, USA",Bridge Collapse,0.5,1,1.044461278455688,1.0054863066740123,0.0,122,30
+"San Francisco, California, USA",Bridge Collapse,0.5,2,1.107790611658752,1.057825292994954,0.0,122,30
+"San Francisco, California, USA",Bridge Collapse,0.5,3,1.0669756598556717,1.0,0.0,122,30
+"San Francisco, California, USA",Bridge Collapse,0.5,4,1.102146153738886,1.0041442098132471,0.0,122,30
+"San Francisco, California, USA",Bridge Collapse,0.7,0,1.9011030079534266,1.101658102721355,20.0,171,30
+"San Francisco, California, USA",Bridge Collapse,0.7,1,1.0500764855465896,1.0142578031214113,0.0,171,30
+"San Francisco, California, USA",Bridge Collapse,0.7,2,1.1116611900551614,1.057825292994954,0.0,171,30
+"San Francisco, California, USA",Bridge Collapse,0.7,3,1.218351110538884,1.0003720254581814,3.3333333333333335,171,30
+"San Francisco, California, USA",Bridge Collapse,0.7,4,1.1142575647103072,1.0086595750336074,0.0,171,30
+"San Francisco, California, USA",Tunnel Closure,0.3,0,1.1353669109228788,1.0,3.3333333333333335,12,30
+"San Francisco, California, USA",Tunnel Closure,0.3,1,1.0006223315458729,1.0,0.0,12,30
+"San Francisco, California, USA",Tunnel Closure,0.3,2,1.0106795874974568,1.0,0.0,12,30
+"San Francisco, California, USA",Tunnel Closure,0.3,3,1.000036435571626,1.0,0.0,12,30
+"San Francisco, California, USA",Tunnel Closure,0.3,4,1.0123812803226964,1.0,0.0,12,30
+"San Francisco, California, USA",Tunnel Closure,0.5,0,1.4043634355990837,1.0,10.0,21,30
+"San Francisco, California, USA",Tunnel Closure,0.5,1,1.002509859675313,1.0,0.0,21,30
+"San Francisco, California, USA",Tunnel Closure,0.5,2,1.0172509829124043,1.0,0.0,21,30
+"San Francisco, California, USA",Tunnel Closure,0.5,3,1.000036435571626,1.0,0.0,21,30
+"San Francisco, California, USA",Tunnel Closure,0.5,4,1.0123812803226964,1.0,0.0,21,30
+"San Francisco, California, USA",Tunnel Closure,0.7,0,1.4043634355990837,1.0,10.0,29,30
+"San Francisco, California, USA",Tunnel Closure,0.7,1,1.002509859675313,1.0,0.0,29,30
+"San Francisco, California, USA",Tunnel Closure,0.7,2,1.0172540302420146,1.0,0.0,29,30
+"San Francisco, California, USA",Tunnel Closure,0.7,3,1.0000919737911802,1.0,0.0,29,30
+"San Francisco, California, USA",Tunnel Closure,0.7,4,1.0167969758710902,1.0,0.0,29,30
+"San Francisco, California, USA",Highway Flood,0.3,0,1.744285729393791,1.2291182146340374,13.333333333333334,624,30
+"San Francisco, California, USA",Highway Flood,0.3,1,1.3359385093977305,1.054966665293131,6.666666666666667,624,30
+"San Francisco, California, USA",Highway Flood,0.3,2,1.161386557928774,1.131136369970829,0.0,624,30
+"San Francisco, California, USA",Highway Flood,0.3,3,1.4157629866975394,1.1151623799649097,6.666666666666667,624,30
+"San Francisco, California, USA",Highway Flood,0.3,4,1.2860820390089927,1.193175825456846,0.0,624,30
+"San Francisco, California, USA",Highway Flood,0.5,0,2.234349189068992,1.2913600823419944,26.666666666666668,1041,30
+"San Francisco, California, USA",Highway Flood,0.5,1,1.7515787146015012,1.0810637085817203,16.666666666666668,1041,30
+"San Francisco, California, USA",Highway Flood,0.5,2,1.5105787832914153,1.2023380272504198,6.666666666666667,1041,30
+"San Francisco, California, USA",Highway Flood,0.5,3,1.4420021387867576,1.157825476407138,6.666666666666667,1041,30
+"San Francisco, California, USA",Highway Flood,0.5,4,1.336732164741412,1.2189090467195562,0.0,1041,30
+"San Francisco, California, USA",Highway Flood,0.7,0,2.373918833194482,1.306129528709491,30.0,1458,30
+"San Francisco, California, USA",Highway Flood,0.7,1,1.7788060436935866,1.1529013857076573,16.666666666666668,1458,30
+"San Francisco, California, USA",Highway Flood,0.7,2,1.6478278733724454,1.2560340228579858,10.0,1458,30
+"San Francisco, California, USA",Highway Flood,0.7,3,1.4522227182560576,1.1725322457827627,6.666666666666667,1458,30
+"San Francisco, California, USA",Highway Flood,0.7,4,1.5669722244357267,1.2480719954674804,6.666666666666667,1458,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.3,0,4.884553993225111,5.0,96.66666666666667,8050,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.3,1,4.23638973772387,5.0,80.0,8050,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.3,2,4.869202084223192,5.0,96.66666666666667,8050,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.3,3,4.540694781584486,5.0,83.33333333333333,8050,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.3,4,4.6480972347070155,5.0,90.0,8050,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.5,0,5.0,5.0,100.0,13680,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.5,1,4.866666666666666,5.0,96.66666666666667,13680,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.5,2,5.0,5.0,100.0,13680,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.5,3,4.866666666666666,5.0,96.66666666666667,13680,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.5,4,5.0,5.0,100.0,13680,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.7,0,5.0,5.0,100.0,19331,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.7,1,5.0,5.0,100.0,19331,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.7,2,5.0,5.0,100.0,19331,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.7,3,5.0,5.0,100.0,19331,30
+"San Francisco, California, USA",Targeted Attack (Top k%),0.7,4,5.0,5.0,100.0,19331,30
+"San Francisco, California, USA",Random Failure,0.3,0,4.107499805517539,5.0,63.333333333333336,8275,30
+"San Francisco, California, USA",Random Failure,0.3,1,3.2465044478968577,2.674902195872468,43.333333333333336,8275,30
+"San Francisco, California, USA",Random Failure,0.3,2,4.179640851677003,5.0,73.33333333333333,8275,30
+"San Francisco, California, USA",Random Failure,0.3,3,4.4081966028085295,5.0,76.66666666666667,8275,30
+"San Francisco, California, USA",Random Failure,0.3,4,3.5148982902050023,3.51108026983714,40.0,8275,30
+"San Francisco, California, USA",Random Failure,0.5,0,5.0,5.0,100.0,13792,30
+"San Francisco, California, USA",Random Failure,0.5,1,4.866679849725149,5.0,96.66666666666667,13792,30
+"San Francisco, California, USA",Random Failure,0.5,2,5.0,5.0,100.0,13792,30
+"San Francisco, California, USA",Random Failure,0.5,3,5.0,5.0,100.0,13792,30
+"San Francisco, California, USA",Random Failure,0.5,4,5.0,5.0,100.0,13792,30
+"San Francisco, California, USA",Random Failure,0.7,0,5.0,5.0,100.0,19308,30
+"San Francisco, California, USA",Random Failure,0.7,1,5.0,5.0,100.0,19308,30
+"San Francisco, California, USA",Random Failure,0.7,2,5.0,5.0,100.0,19308,30
+"San Francisco, California, USA",Random Failure,0.7,3,5.0,5.0,100.0,19308,30
+"San Francisco, California, USA",Random Failure,0.7,4,5.0,5.0,100.0,19308,30

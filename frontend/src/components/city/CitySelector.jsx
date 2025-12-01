@@ -60,13 +60,13 @@ function CitySelector({ currentCity, onSelect }) {
     matches.length > 0 || auto.length > 0 ? [...matches, ...auto] : [];
 
   return (
-    <section
+    <div
       style={{
-        background: "#ffffff",
-        borderRadius: "1.25rem",
+        background: "white",
+        borderRadius: "1.5rem",
         padding: "1.5rem 1.75rem",
-        boxShadow: "0 16px 40px rgba(15,23,42,0.06)",
-        marginBottom: "1.75rem",
+        boxShadow: "0 18px 45px rgba(15, 23, 42, 0.08)",
+        border: "1px solid #e5e7eb",
       }}
     >
       {/* Header */}
@@ -80,77 +80,84 @@ function CitySelector({ currentCity, onSelect }) {
       >
         <div
           style={{
-            width: 28,
-            height: 28,
+            width: 32,
+            height: 32,
             borderRadius: "999px",
-            background: "#eef2ff",
+            background:
+              "radial-gradient(circle at 30% 20%, #f97316, #7c3aed)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#4f46e5",
-            fontSize: 16,
+            color: "white",
+            fontSize: "1rem",
           }}
         >
           📍
         </div>
         <div>
-          <h2
+          <div
             style={{
-              margin: 0,
-              fontSize: "1rem",
               fontWeight: 600,
-              color: "#111827",
+              fontSize: "1.05rem",
             }}
           >
             Select a US City
-          </h2>
-          <p
+          </div>
+          <div
             style={{
-              margin: 0,
-              marginTop: 2,
               fontSize: "0.9rem",
               color: "#6b7280",
+              marginTop: 2,
             }}
           >
-            Search for any city or choose from popular options.
-          </p>
+            Search any city or choose from popular options.
+          </div>
         </div>
       </div>
 
-      {/* Search bar + button */}
-      <div
+      {/* Search bar */}
+      <form
+        onSubmit={handleSearchClick}
         style={{
+          marginTop: "1.25rem",
           display: "flex",
           gap: "0.75rem",
-          alignItems: "center",
-          marginBottom: "0.9rem",
         }}
       >
         <div
           style={{
+            position: "relative",
             flex: 1,
-            display: "flex",
-            alignItems: "center",
-            borderRadius: "999px",
-            border: "1px solid #e5e7eb",
-            padding: "0.45rem 0.9rem",
-            background: "#f9fafb",
-            gap: "0.5rem",
           }}
         >
-          <span style={{ color: "#9ca3af", fontSize: 16 }}>🔍</span>
+          <span
+            style={{
+              position: "absolute",
+              left: 14,
+              top: "50%",
+              transform: "translateY(-50%)",
+              fontSize: "1rem",
+              color: "#9ca3af",
+            }}
+          >
+            🔍
+          </span>
           <input
             type="text"
-            placeholder="Search for a city (e.g., Chicago)…"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setTouched(true);
+            }}
+            placeholder="e.g., Houston, TX"
             style={{
-              border: "none",
+              width: "100%",
+              borderRadius: "999px",
+              border: "1px solid #e5e7eb",
+              padding: "0.65rem 1rem 0.65rem 2.4rem",
               outline: "none",
-              background: "transparent",
-              flex: 1,
               fontSize: "0.95rem",
-              color: "#111827",
+              background: "#f9fafb",
             }}
           />
         </div>
@@ -161,16 +168,15 @@ function CitySelector({ currentCity, onSelect }) {
             if (results[0]) onSelect(results[0]);
           }}
           style={{
-            padding: "0.55rem 1.3rem",
             borderRadius: "999px",
             border: "none",
-            background: "#6366f1",
-            color: "#ffffff",
+            padding: "0.65rem 1.4rem",
+            background: "#4f46e5",
+            color: "white",
             fontWeight: 600,
             fontSize: "0.95rem",
             cursor: "pointer",
-            boxShadow: "0 8px 20px rgba(99,102,241,0.45)",
-            whiteSpace: "nowrap",
+            boxShadow: "0 10px 25px rgba(79, 70, 229, 0.35)",
           }}
         >
           Search
