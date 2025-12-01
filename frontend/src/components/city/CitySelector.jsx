@@ -1,17 +1,63 @@
 // src/components/city/CitySelector.jsx
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { POPULAR_CITIES } from "../../constants/cities";
 
 function CitySelector({ currentCity, onSelect }) {
   const [query, setQuery] = useState("");
+  const [auto, setAuto] = useState([]);
+  const [loading, setLoading] = useState(false);
 
+  // 🔍 Local matches from POPULAR_CITIES
   const matches = useMemo(() => {
     if (!query.trim()) return [];
     const q = query.toLowerCase();
-    return POPULAR_CITIES.filter((c) =>
-      c.label.toLowerCase().includes(q)
-    );
+    return POPULAR_CITIES.filter((c) => c.label.toLowerCase().includes(q));
   }, [query]);
+
+  // 🌐 Real autocomplete (Nominatim)
+  useEffect(() => {
+    if (!query.trim()) {
+      setAuto([]);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    async function searchCities() {
+      setLoading(true);
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=us&limit=5&city=${encodeURIComponent(
+          query
+        )}`;
+
+        const res = await fetch(url, { signal: controller.signal });
+        const data = await res.json();
+
+        const cleaned = data
+          .filter((d) => d.display_name)
+          .map((d) => ({
+            label: d.display_name,
+            query: d.display_name,
+          }));
+
+        setAuto(cleaned);
+      } catch (err) {
+        // ignore abort
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    const t = setTimeout(searchCities, 250);
+    return () => {
+      controller.abort();
+      clearTimeout(t);
+    };
+  }, [query]);
+
+  // 👉 Unified result list (popular matches first, then autocomplete)
+  const results =
+    matches.length > 0 || auto.length > 0 ? [...matches, ...auto] : [];
 
   return (
     <section
@@ -23,7 +69,7 @@ function CitySelector({ currentCity, onSelect }) {
         marginBottom: "1.75rem",
       }}
     >
-      {/* Card header */}
+      {/* Header */}
       <div
         style={{
           display: "flex",
@@ -108,10 +154,11 @@ function CitySelector({ currentCity, onSelect }) {
             }}
           />
         </div>
+
         <button
           type="button"
           onClick={() => {
-            if (matches[0]) onSelect(matches[0]);
+            if (results[0]) onSelect(results[0]);
           }}
           style={{
             padding: "0.55rem 1.3rem",
@@ -130,8 +177,8 @@ function CitySelector({ currentCity, onSelect }) {
         </button>
       </div>
 
-      {/* Search results (if any) */}
-      {query && (
+      {/* Search results */}
+      {query.trim() && (
         <div style={{ marginBottom: "0.9rem" }}>
           <div
             style={{
@@ -142,13 +189,22 @@ function CitySelector({ currentCity, onSelect }) {
           >
             Search Results:
           </div>
-          {matches.length === 0 && (
+
+          {loading && (
             <div style={{ fontSize: "0.85rem", color: "#9ca3af" }}>
-              No matching preset cities. You can still enter a full city
-              string directly in the disruption panel.
+              Searching…
             </div>
           )}
-          {matches.map((c) => (
+
+          {!loading && results.length === 0 && (
+            <div style={{ fontSize: "0.85rem", color: "#9ca3af" }}>
+              No matches found. Try a full city name like:
+              <br />
+              <em>"Denver, Colorado"</em> or <em>"New York City"</em>.
+            </div>
+          )}
+
+          {results.map((c) => (
             <button
               key={c.label}
               onClick={() => {
@@ -177,50 +233,55 @@ function CitySelector({ currentCity, onSelect }) {
       )}
 
       {/* Popular cities */}
-      <div
-        style={{
-          fontSize: "0.85rem",
-          color: "#6b7280",
-          marginBottom: 4,
-        }}
-      >
-        Popular Cities:
-      </div>
-      <div
-        style={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: "0.5rem",
-          marginBottom: currentCity ? "0.9rem" : 0,
-        }}
-      >
-        {POPULAR_CITIES.map((c) => (
-          <button
-            key={c.label}
-            onClick={() => {
-              onSelect(c);
-              setQuery(c.label);
-            }}
+      {!query.trim() && (
+        <>
+          <div
             style={{
-              borderRadius: "999px",
-              padding: "0.4rem 0.9rem",
-              border:
-                currentCity?.label === c.label
-                  ? "1px solid #4f46e5"
-                  : "1px solid #e5e7eb",
-              background:
-                currentCity?.label === c.label ? "#eef2ff" : "#ffffff",
-              cursor: "pointer",
-              fontSize: "0.9rem",
-              color: "#111827",
+              fontSize: "0.85rem",
+              color: "#6b7280",
+              marginBottom: 4,
             }}
           >
-            {c.label}
-          </button>
-        ))}
-      </div>
+            Popular Cities:
+          </div>
 
-      {/* Currently analyzing banner */}
+          <div
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "0.5rem",
+              marginBottom: currentCity ? "0.9rem" : 0,
+            }}
+          >
+            {POPULAR_CITIES.map((c) => (
+              <button
+                key={c.label}
+                onClick={() => {
+                  onSelect(c);
+                  setQuery(c.label);
+                }}
+                style={{
+                  borderRadius: "999px",
+                  padding: "0.4rem 0.9rem",
+                  border:
+                    currentCity?.label === c.label
+                      ? "1px solid #4f46e5"
+                      : "1px solid #e5e7eb",
+                  background:
+                    currentCity?.label === c.label ? "#eef2ff" : "#ffffff",
+                  cursor: "pointer",
+                  fontSize: "0.9rem",
+                  color: "#111827",
+                }}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Current banner */}
       {currentCity && (
         <div
           style={{
