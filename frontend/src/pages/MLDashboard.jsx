@@ -53,8 +53,6 @@ export default function MLDashboard() {
 
   return (
     <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto" }}>
-      <h2>ML Resilience Prediction</h2>
-
       {/* City input */}
       <div style={{ marginTop: "1.2rem" }}>
         <label>
