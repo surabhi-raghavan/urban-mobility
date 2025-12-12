@@ -1,10 +1,8 @@
-// src/components/Legend.jsx
-
 function Legend() {
   const items = [
-    { color: "#9ca3af", label: "Local roads" },      // gray
-    { color: "#1d4ed8", label: "Major highways" },   // blue
-    { color: "#ef4444", label: "Disrupted roads" },  // red
+    { color: "#9ca3af", label: "Local roads" },
+    { color: "#1d4ed8", label: "Major highways" },
+    { color: "#ef4444", label: "Disrupted roads" },
   ];
 
   return (
@@ -22,7 +20,6 @@ function Legend() {
         marginTop: "0.75rem",
       }}
     >
-      {/* Left group: legend items */}
       <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
         {items.map((it) => (
           <div
@@ -47,10 +44,7 @@ function Legend() {
         ))}
       </div>
 
-      {/* Spacer */}
       <div style={{ flexGrow: 1 }} />
-
-      {/* Right side hint */}
       <span style={{ opacity: 0.75 }}>Drag to pan · Scroll to zoom</span>
     </div>
   );

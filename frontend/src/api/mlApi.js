@@ -1,6 +1,3 @@
-// src/api/mlApi.js
-
-// Base backend URL. Adjust env variable name if your project uses a different one.
 const RAW_BASE =
   import.meta.env.VITE_BACKEND_URL ||
   import.meta.env.VITE_API_URL ||

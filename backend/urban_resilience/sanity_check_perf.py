@@ -1,5 +1,3 @@
-# backend/urban_resilience/sanity_check_perf.py
-
 from __future__ import annotations
 
 import time
@@ -15,10 +13,6 @@ from backend.urban_resilience.experiments import run_single_scenario_for_city
 
 
 def time_select_edges(G, city: str, scenario: str, severity: float) -> None:
-    """
-    Time just the edge selection step (no shortest paths).
-    Useful to see if Targeted Attack caching is working.
-    """
     print(f"\n--- Edge selection timing: {city} | {scenario} | severity={severity} ---")
 
     print("  [*] Running FIRST call (this may compute betweenness)...")
@@ -45,9 +39,6 @@ def time_select_edges(G, city: str, scenario: str, severity: float) -> None:
 
 
 def time_full_simulation(city: str, scenario: str, severity: float) -> None:
-    """
-    Time one full run_single_scenario_for_city call for a given scenario.
-    """
     print(f"\n=== Full simulation timing: {city} | {scenario} | severity={severity} ===")
 
     print("  [*] Starting simulation run...")
@@ -76,24 +67,21 @@ def time_full_simulation(city: str, scenario: str, severity: float) -> None:
 
 
 def main() -> None:
-    # Pick first city and middle severity
     city = DEFAULT_CITIES[0]
     severity = SEVERITIES[1] if len(SEVERITIES) > 1 else SEVERITIES[0]
 
     print(f"Using city = {city}")
     print(f"Using severity = {severity}")
 
-    print("\n[*] Loading city graph (this is heavy the first time)...")
+    print("\n[*] Loading city graph...")
     t0 = time.perf_counter()
     G = load_city_graph(city, cache_dir="graphs")
     t1 = time.perf_counter()
     print(f"[OK] Graph load time for {city}: {t1 - t0:.4f} s")
 
-    # Edge selection tests
     time_select_edges(G, city, "Targeted Attack (Top k%)", severity)
     time_select_edges(G, city, "Random Failure", severity)
 
-    # Full simulation tests
     time_full_simulation(city, "Targeted Attack (Top k%)", severity)
     time_full_simulation(city, "Random Failure", severity)
 

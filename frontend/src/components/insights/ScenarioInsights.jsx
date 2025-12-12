@@ -1,5 +1,3 @@
-// src/components/insights/ScenarioInsights.jsx
-
 const SCENARIO_DESCRIPTIONS = {
   "Bridge Collapse":
     "Bridges fail, cutting cross-river or gap-spanning links.",

@@ -1,15 +1,12 @@
-// frontend/src/utils/metricsText.js
-
 export function computeResilienceScore(avgRatio, pctDisconnected) {
   if (avgRatio == null || pctDisconnected == null) return null;
 
-  // Cap crazy outliers so 1 awful run doesn't nuke the scale
-  const cappedRatio = Math.min(avgRatio, 3); // 3x slower is "max pain" for this score
-  const travelScore = 1 / cappedRatio;       // 1 = no delay, ~0.33 = 3x slower
-  const connectivityScore = 1 - pctDisconnected; // 1 = fully connected, 0 = totally broken
+  const cappedRatio = Math.min(avgRatio, 3);
+  const travelScore = 1 / cappedRatio;
+  const connectivityScore = 1 - pctDisconnected;
 
   const raw = 0.6 * connectivityScore + 0.4 * travelScore;
-  return Number((raw * 100).toFixed(1)); // 0–100
+  return Number((raw * 100).toFixed(1));
 }
 
 export function categorizeResilience(score) {
@@ -80,28 +77,4 @@ export function classifyShock(avgRatio, pctDisconnected) {
     level: "Mild",
     description: "Mostly minor slowdowns; network stays connected.",
   };
-}
-
-export function commuterStory(avgRatio, pctDisconnected, baseMinutes = 20) {
-  if (avgRatio == null) return null;
-
-  const base = baseMinutes;
-  const minTrip = Math.round(base * avgRatio * 0.9);
-  const maxTrip = Math.round(base * avgRatio * 1.1);
-  const disconnectedShare = pctDisconnected != null
-    ? Math.round(pctDisconnected * 100)
-    : null;
-
-  let reachabilitySentence = "";
-  if (disconnectedShare == null || disconnectedShare === 0) {
-    reachabilitySentence = "Most trips still complete, just a bit slower.";
-  } else if (disconnectedShare < 15) {
-    reachabilitySentence = `${disconnectedShare}% of random start–end pairs are fully cut off.`;
-  } else if (disconnectedShare < 35) {
-    reachabilitySentence = `Roughly 1 in ${Math.round(100 / disconnectedShare)} cross-town pairs can no longer reach each other.`;
-  } else {
-    reachabilitySentence = `Around ${disconnectedShare}% of random pairs can’t reach each other at all.`;
-  }
-
-  return `A typical ${base}-minute cross-town trip would feel like about ${minTrip}–${maxTrip} minutes after this shock. ${reachabilitySentence}`;
 }

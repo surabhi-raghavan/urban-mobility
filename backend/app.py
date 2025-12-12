@@ -1,5 +1,3 @@
-# backend/app.py
-
 from __future__ import annotations
 
 from typing import List, Tuple, Dict, Any
@@ -27,7 +25,6 @@ app = FastAPI(
     version="0.3.0",
 )
 
-# Allow frontend (any origin) – fine for class project
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

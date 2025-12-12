@@ -1,4 +1,3 @@
-// src/App.jsx
 import TopBar from "./components/layout/TopBar";
 import Dashboard from "./pages/Dashboard";
 

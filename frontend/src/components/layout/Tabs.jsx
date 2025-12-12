@@ -1,12 +1,9 @@
-// src/components/layout/Tabs.jsx
-
 function Tabs({ active, onChange }) {
   const items = [
     { id: "visual", label: "Network Visualization" },
     { id: "comparison", label: "Before/After Comparison" },
     { id: "resilience", label: "Resilience Analysis" },
     { id: "ml", label: "ML Insights" },
-    { id: "evaluation", label: "Evaluation" },
   ];
 
   return (
