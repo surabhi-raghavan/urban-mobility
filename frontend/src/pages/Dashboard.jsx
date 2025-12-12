@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import { useEffect, useState, useMemo } from "react";
 import CitySelector from "../components/city/CitySelector";
 import Tabs from "../components/layout/Tabs";
@@ -15,7 +14,6 @@ import WhatIfPanel from "../components/insights/WhatIfPanel";
 
 import MLDashboard from "./MLDashboard";
 
-// Map slider percentage (5–80) to severity (0.01–0.5)
 function mapIntensityToSeverity(intensityPercent) {
   const minSlider = 5;
   const maxSlider = 80;
@@ -35,7 +33,7 @@ function Dashboard() {
   const [selectedCity, setSelectedCity] = useState(null);
   const [cityOverride, setCityOverride] = useState("");
 
-  const [scenario, setScenario] = useState(""); // no default
+  const [scenario, setScenario] = useState("");
   const [intensity, setIntensity] = useState(40);
   const [nPairs, setNPairs] = useState(40);
 
@@ -43,13 +41,11 @@ function Dashboard() {
   const [status, setStatus] = useState("");
   const [simResult, setSimResult] = useState(null);
 
-  // edgesGeo = baseline/intact network; removedGeo = disrupted subset
   const [edgesGeo, setEdgesGeo] = useState(null);
   const [removedGeo, setRemovedGeo] = useState(null);
 
   const [history, setHistory] = useState([]);
 
-  // Force Leaflet map remount when this increments
   const [mapVersion, setMapVersion] = useState(0);
 
   useEffect(() => {
@@ -102,7 +98,7 @@ function Dashboard() {
       setEdgesGeo(res.edges_geojson);
       setRemovedGeo(res.removed_edges_geojson);
       setStatus("Done.");
-      setMapVersion((v) => v + 1); // bump map version on each run
+      setMapVersion((v) => v + 1);
 
       setHistory((prev) => [
         ...prev,
@@ -154,13 +150,11 @@ function Dashboard() {
           setSelectedCity(city);
           setCityOverride("");
 
-          // Reset disruption + baseline state for new city
           setSimResult(null);
           setRemovedGeo(null);
-          setEdgesGeo(null); // so we don't show previous city while loading
+          setEdgesGeo(null);
           setStatus("Loading baseline network…");
 
-          // Use a tiny random-failure shock just to get edges_geojson.
           runSimulation({
             city: city.query,
             scenario: "Random Failure",
@@ -170,7 +164,7 @@ function Dashboard() {
             .then((res) => {
               setEdgesGeo(res.edges_geojson);
               setStatus("Baseline network loaded.");
-              setMapVersion((v) => v + 1); // bump when baseline changes
+              setMapVersion((v) => v + 1);
             })
             .catch((err) => {
               console.error(err);

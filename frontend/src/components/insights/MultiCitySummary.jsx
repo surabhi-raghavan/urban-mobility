@@ -1,5 +1,3 @@
-// src/components/insights/MultiCitySummary.jsx
-
 function MultiCitySummary({ history }) {
   if (!history || history.length === 0) {
     return (
@@ -18,7 +16,6 @@ function MultiCitySummary({ history }) {
     );
   }
 
-  // group by city
   const byCity = {};
   history.forEach((h) => {
     if (!byCity[h.cityLabel]) byCity[h.cityLabel] = [];

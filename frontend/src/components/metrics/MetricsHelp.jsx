@@ -1,4 +1,3 @@
-// frontend/src/components/metrics/MetricsHelp.jsx
 import React from "react";
 
 const MetricsHelp = () => {

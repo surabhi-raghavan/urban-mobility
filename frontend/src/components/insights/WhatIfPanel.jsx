@@ -1,4 +1,3 @@
-// frontend/src/components/insights/WhatIfPanel.jsx
 import React from "react";
 import {
   computeResilienceScore,

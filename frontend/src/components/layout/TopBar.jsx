@@ -1,5 +1,3 @@
-// src/components/layout/TopBar.jsx
-
 function TopBar() {
   return (
     <header

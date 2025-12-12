@@ -1,4 +1,3 @@
-// src/components/maps/ComparisonMaps.jsx
 import NetworkMap from "./NetworkMap";
 
 function ComparisonMaps({ edges, removedEdges, scenario, metrics }) {

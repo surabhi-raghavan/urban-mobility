@@ -1,4 +1,3 @@
-// src/components/city/CitySelector.jsx
 import { useEffect, useMemo, useState } from "react";
 import { POPULAR_CITIES } from "../../constants/cities";
 

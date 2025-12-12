@@ -1,5 +1,3 @@
-// src/constants/cities.js
-
 export const POPULAR_CITIES = [
   {
     label: "Chicago",

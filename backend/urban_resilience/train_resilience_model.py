@@ -1,5 +1,3 @@
-# backend/urban_resilience/train_resilience_model.py
-
 from __future__ import annotations
 
 import os
@@ -17,7 +15,7 @@ DATA_PATH = "data/resilience_dataset.csv"
 MODEL_DIR = "models"
 MODEL_PATH = os.path.join(MODEL_DIR, "resilience_rf.pkl")
 FEAT_IMPORTANCES_PATH = os.path.join(MODEL_DIR, "feature_importances.csv")
-META_PATH = os.path.join(MODEL_DIR, "resilience_rf_meta.joblib")   # NEW
+META_PATH = os.path.join(MODEL_DIR, "resilience_rf_meta.joblib")
 
 
 def load_dataset(path: str = DATA_PATH) -> pd.DataFrame:
@@ -36,19 +34,14 @@ def prepare_features(df: pd.DataFrame):
     """
     df = df.copy()
 
-    # Drop rows without label
     df = df[~df["label_resilience_score"].isna()].reset_index(drop=True)
 
-    # Target
     y = df["label_resilience_score"].values
 
-    # Base numeric features: all feat_* columns
     feat_cols = [c for c in df.columns if c.startswith("feat_")]
 
-    # Include severity
     feat_cols.append("severity")
 
-    # One-hot encode scenario
     df_scn = pd.get_dummies(df["scenario"], prefix="scenario")
     X_numeric = df[feat_cols]
     X = pd.concat([X_numeric, df_scn], axis=1)
@@ -77,7 +70,6 @@ def train_and_evaluate():
     print("Training RandomForestRegressor...")
     model.fit(X_train, y_train)
 
-    # Evaluation
     y_pred = model.predict(X_test)
     r2 = r2_score(y_test, y_pred)
     mae = mean_absolute_error(y_test, y_pred)
@@ -86,12 +78,10 @@ def train_and_evaluate():
     print(f"R^2:  {r2:.3f}")
     print(f"MAE:  {mae:.4f}\n")
 
-    # Save model
     os.makedirs(MODEL_DIR, exist_ok=True)
     joblib.dump(model, MODEL_PATH)
     print(f"Saved model to {MODEL_PATH}")
 
-    # Save feature importances
     importances = model.feature_importances_
     fi_df = pd.DataFrame(
         {
@@ -103,7 +93,6 @@ def train_and_evaluate():
     fi_df.to_csv(FEAT_IMPORTANCES_PATH, index=False)
     print(f"Saved feature importances to {FEAT_IMPORTANCES_PATH}")
 
-    # 🔥 NEW: save metadata so inference knows feature order + scenario names
     meta = {
         "feature_names": feature_names,
         "scenario_onehot_cols": scenario_onehot_cols,

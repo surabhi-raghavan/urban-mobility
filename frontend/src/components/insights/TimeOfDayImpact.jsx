@@ -1,10 +1,3 @@
-// src/components/insights/TimeOfDayImpact.jsx
-
-/**
- * Shows how a typical 20-minute cross-town trip would feel
- * at different times of day, scaled by the delay factor from
- * the current simulation.
- */
 const TimeOfDayImpact = ({ simResult }) => {
   if (!simResult) {
     return (
@@ -22,7 +15,6 @@ const TimeOfDayImpact = ({ simResult }) => {
   const { avg_ratio } = simResult;
   const delayFactor = avg_ratio || 1;
 
-  // "typical" durations we use as a base
   const baseDurations = {
     offPeak: 16,
     midday: 20,

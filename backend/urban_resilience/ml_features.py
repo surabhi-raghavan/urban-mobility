@@ -1,5 +1,3 @@
-# backend/urban_resilience/ml_features.py
-
 from __future__ import annotations
 
 from typing import Dict, Any
@@ -66,13 +64,11 @@ def compute_city_features(G: nx.MultiDiGraph) -> Dict[str, Any]:
 
     Returns a dict with numeric values only (good for ML).
     """
-    # Work mostly on undirected simplification for structural stats
     if isinstance(G, (nx.MultiDiGraph, nx.MultiGraph)):
         Gu = nx.Graph()
         for u, v, data in G.edges(data=True):
             length = data.get("length", 1.0)
             if Gu.has_edge(u, v):
-                # keep the shortest parallel edge
                 if length < Gu[u][v].get("length", length):
                     Gu[u][v]["length"] = length
             else:
@@ -92,38 +88,32 @@ def compute_city_features(G: nx.MultiDiGraph) -> Dict[str, Any]:
     degree_std = float(statistics.pstdev(degrees)) if len(degrees) > 1 else 0.0
     max_degree = max(degrees) if degrees else 0
 
-    # Clustering
     try:
         avg_clustering = float(nx.average_clustering(Gu))
     except Exception:
         avg_clustering = 0.0
 
-    # Transitivity (global clustering)
     try:
         transitivity = float(nx.transitivity(Gu))
     except Exception:
         transitivity = 0.0
 
-    # Assortativity (degree)
     try:
         assortativity = float(nx.degree_assortativity_coefficient(Gu))
     except Exception:
         assortativity = 0.0
 
-    # Density
     try:
         density = float(nx.density(Gu))
     except Exception:
         density = 0.0
 
-    # Giant component fraction
     if n_nodes > 0:
         H = _largest_component_subgraph(Gu)
         giant_frac = H.number_of_nodes() / n_nodes
     else:
         giant_frac = 0.0
 
-    # Approx average shortest path length (in meters)
     try:
         approx_aspl = _approx_average_shortest_path_length(Gu, k=200)
     except Exception:
@@ -131,7 +121,6 @@ def compute_city_features(G: nx.MultiDiGraph) -> Dict[str, Any]:
     if approx_aspl is None:
         approx_aspl = 0.0
 
-    # Modularity via Louvain on largest component
     try:
         H = _largest_component_subgraph(Gu)
         if H.number_of_nodes() > 0:
@@ -144,7 +133,6 @@ def compute_city_features(G: nx.MultiDiGraph) -> Dict[str, Any]:
     except Exception:
         modularity = 0.0
 
-    # Edge-level stats (bridges, tunnels, highway types)
     gdf_edges = graph_to_edges_gdf(G)
     n_edges_gdf = len(gdf_edges)
 
@@ -156,9 +144,7 @@ def compute_city_features(G: nx.MultiDiGraph) -> Dict[str, Any]:
             (gdf_edges["tunnel"].fillna(False).astype(bool)).sum()
         ) / n_edges_gdf
 
-        # Highway classification counts
         hw = gdf_edges["highway"]
-        # highway can be str or list
         def is_major(x):
             if isinstance(x, str):
                 xs = [x]

@@ -1,4 +1,3 @@
-// src/components/maps/NetworkMap.jsx
 import React, { useMemo, useEffect } from "react";
 import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -54,8 +53,7 @@ function FitBoundsToGeoJSON({ data }) {
 function NetworkMap({ edges, removedEdges, mapVersion }) {
   const hasData = edges && edges.features && edges.features.length > 0;
 
-  // Basic center fallback if we have nothing
-  const defaultCenter = [40.44, -79.99]; // Pittsburgh-ish as fallback
+  const defaultCenter = [40.44, -79.99];
 
   const styleEdges = useMemo(
     () => ({
@@ -64,7 +62,7 @@ function NetworkMap({ edges, removedEdges, mapVersion }) {
         const major = ["motorway", "trunk", "primary", "secondary"];
         const isMajor =
           Array.isArray(hw) ? hw.some((h) => major.includes(h)) : major.includes(hw);
-        return isMajor ? "#2563eb" : "#9ca3af"; // blue vs grey
+        return isMajor ? "#2563eb" : "#9ca3af";
       },
       weight: (feature) => {
         const hw = feature?.properties?.highway;
@@ -80,14 +78,13 @@ function NetworkMap({ edges, removedEdges, mapVersion }) {
 
   const styleRemoved = useMemo(
     () => ({
-      color: "#dc2626", // red
+      color: "#dc2626",
       weight: 3.2,
       opacity: 0.95,
     }),
     []
   );
 
-  // Leaflet expects a function style or plain object; we'll wrap our logic
   const edgeStyleFn = (feature) => ({
     color: styleEdges.color(feature),
     weight: styleEdges.weight(feature),
@@ -104,7 +101,7 @@ function NetworkMap({ edges, removedEdges, mapVersion }) {
       }}
     >
       <MapContainer
-        key={mapVersion} // <— force full remount when version changes
+        key={mapVersion}
         center={defaultCenter}
         zoom={11}
         style={{ height: "520px", width: "100%" }}
